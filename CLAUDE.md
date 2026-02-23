@@ -101,6 +101,28 @@ Model Context Protocol server with `Prompts/`, `Resources/`, `Servers/`, `Tools/
 - Type definitions in `resources/js/types/` — `agent.ts`, `mail.ts`, `chat.ts`, `navigation.ts`, `ui.ts`
 - Custom React hooks in `resources/js/hooks/` (e.g., `use-jmap-poll`, `use-openclaw`, `use-system-events`)
 
+## Deploy Cycle (MANDATORY)
+
+Every change follows: **commit → push → pull on server → clear caches**.
+
+```bash
+# 1. Commit and push
+git add <files> && git commit -m "message" && git push
+
+# 2. Pull on production server
+ssh mko 'cd /srv/markweb.kanary.org/web/app && git pull'
+
+# 3. Rebuild frontend ON SERVER (VITE_REVERB_* vars are baked at build time)
+ssh mko 'source ~/.bash_profile && cd /srv/markweb.kanary.org/web/app && bun run build'
+
+# 4. Clear caches
+ssh mko 'cd /srv/markweb.kanary.org/web/app && php artisan route:cache && php artisan config:cache'
+```
+
+**Critical:** Always build frontend on the server, never locally — `VITE_REVERB_*` env vars get baked into JS at build time. Building locally bakes `localhost` values.
+
+For PHP-only changes, skip step 3 (no rebuild needed).
+
 ## Environment
 
 - `DB_CONNECTION=pgsql` — PostgreSQL
@@ -114,3 +136,5 @@ Model Context Protocol server with `Prompts/`, `Resources/`, `Servers/`, `Tools/
 - `_journal/` — project-specific dated logs (`YYYY-MM-DD.md`, append after completing work)
 - `~/.gh/_notes.md` — cross-project current state summary
 - `~/.gh/_journal/` — cross-project operational logs
+
+All work must be logged. Append a new session section to `_journal/YYYY-MM-DD.md` after completing work. Include: what changed, why, any gotchas discovered, and the commit hash.
