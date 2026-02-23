@@ -39,6 +39,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
     );
     const [systemPrompt, setSystemPrompt] = useState<string>(session?.system_prompt ?? '');
     const [isStreaming, setIsStreaming] = useState(false);
+    const [isSending, setIsSending] = useState(false);
 
     // Track the accumulated text for the current streaming message
     const accumulatedRef = useRef('');
@@ -79,6 +80,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
             const id = `stream-${Date.now()}`;
             assistantIdRef.current = id;
             accumulatedRef.current = '';
+            setIsSending(false);
             setIsStreaming(true);
             setMessages((prev) => [
                 ...prev,
@@ -109,6 +111,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
         });
 
         channel.listen('.error', (e: StreamErrorEvent) => {
+            setIsSending(false);
             const id = assistantIdRef.current;
             if (id) {
                 setMessages((prev) =>
@@ -143,7 +146,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
 
     const handleSend = useCallback(
         async (content: string) => {
-            if (isStreaming || !content.trim()) return;
+            if (isStreaming || isSending || !content.trim()) return;
 
             // Add user message to UI immediately
             const userMsg: LocalMessage = {
@@ -152,6 +155,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
                 content: content.trim(),
             };
             setMessages((prev) => [...prev, userMsg]);
+            setIsSending(true);
 
             try {
                 const response = await fetch(send.url(), {
@@ -181,6 +185,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
                 }
             } catch (error) {
                 console.error('Send error:', error);
+                setIsSending(false);
                 setMessages((prev) => [
                     ...prev,
                     {
@@ -191,7 +196,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
                 ]);
             }
         },
-        [isStreaming, sessionKey, selectedModel, selectedProvider, systemPrompt]
+        [isStreaming, isSending, sessionKey, selectedModel, selectedProvider, systemPrompt]
     );
 
     return (
@@ -200,6 +205,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
             <MessageInput
                 onSend={handleSend}
                 isStreaming={isStreaming}
+                isSending={isSending}
                 selectedModel={selectedModel}
                 selectedProvider={selectedProvider}
                 onModelChange={(model, provider) => {

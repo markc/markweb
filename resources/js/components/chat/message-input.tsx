@@ -5,6 +5,7 @@ import { AvailableModels } from '@/types';
 interface Props {
     onSend: (content: string) => void;
     isStreaming: boolean;
+    isSending: boolean;
     selectedModel: string;
     selectedProvider: string;
     onModelChange: (model: string, provider: string) => void;
@@ -16,6 +17,7 @@ interface Props {
 export default function MessageInput({
     onSend,
     isStreaming,
+    isSending,
     selectedModel,
     selectedProvider,
     onModelChange,
@@ -29,7 +31,7 @@ export default function MessageInput({
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        if (!input.trim() || isStreaming) return;
+        if (!input.trim() || isStreaming || isSending) return;
         onSend(input);
         setInput('');
         if (textareaRef.current) {
@@ -118,17 +120,17 @@ export default function MessageInput({
                         onInput={handleInput}
                         placeholder="Type a message..."
                         rows={1}
-                        disabled={isStreaming}
+                        disabled={isStreaming || isSending}
                         className="flex-1 resize-none rounded-xl border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-[var(--scheme-accent)] disabled:opacity-50"
                         style={{ borderColor: 'var(--scheme-border)', color: 'var(--scheme-fg-primary)' }}
                     />
                     <button
                         type="submit"
-                        disabled={isStreaming || !input.trim()}
+                        disabled={isStreaming || isSending || !input.trim()}
                         className="rounded-xl px-4 py-3 text-sm font-medium transition-colors disabled:opacity-50"
                         style={{ backgroundColor: 'var(--scheme-accent)', color: 'var(--scheme-accent-fg)' }}
                     >
-                        {isStreaming ? (
+                        {isStreaming || isSending ? (
                             <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
