@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
 import { useEffect, type ReactNode } from 'react';
 import Sidebar from '@/components/sidebar';
@@ -26,6 +26,7 @@ const rightPanels = [
 
 function LayoutContent({ children }: { children: ReactNode }) {
     const { left, right, noPadding, toggleSidebar } = useTheme();
+    const { auth } = usePage().props;
 
     // Scroll-reactive sidebar borders
     useEffect(() => {
@@ -34,6 +35,30 @@ function LayoutContent({ children }: { children: ReactNode }) {
         onScroll();
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
+
+    // Subscribe to user-level channel for session lifecycle events
+    useEffect(() => {
+        if (!(auth as any)?.user?.id) return;
+
+        const userId = (auth as any).user.id;
+        const channel = window.Echo.private(`chat.user.${userId}`);
+
+        const reloadSidebar = () => {
+            router.reload({ only: ['sidebarConversations', 'sidebarStats'] });
+        };
+
+        channel.listen('.session.created', reloadSidebar);
+        channel.listen('.session.updated', reloadSidebar);
+        channel.listen('.session.deleted', () => {
+            if (window.location.pathname === '/chat') {
+                reloadSidebar();
+            }
+        });
+
+        return () => {
+            window.Echo.leave(`chat.user.${userId}`);
+        };
+    }, [(auth as any)?.user?.id]);
 
     return (
         <div className="bg-background text-foreground">
