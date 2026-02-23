@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\ChatController::index
 * @see app/Http/Controllers/ChatController.php:27
@@ -654,6 +654,15 @@ destroyForm.delete = (args: { conversation: string | number } | [conversation: s
 
 destroy.form = destroyForm
 
-const ChatController = { index, projects, stream, upload, attachment, show, exportMethod, destroy, export: exportMethod }
+const sseChat = {
+    index: Object.assign(index, index),
+    projects: Object.assign(projects, projects),
+    stream: Object.assign(stream, stream),
+    upload: Object.assign(upload, upload),
+    attachment: Object.assign(attachment, attachment),
+    show: Object.assign(show, show),
+    export: Object.assign(exportMethod, exportMethod),
+    destroy: Object.assign(destroy, destroy),
+}
 
-export default ChatController
+export default sseChat

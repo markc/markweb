@@ -4,8 +4,8 @@ import JmapAttachmentController from './JmapAttachmentController'
 import SystemEventController from './SystemEventController'
 import OpenClawPushController from './OpenClawPushController'
 import DashboardController from './DashboardController'
-import ChatController from './ChatController'
 import Agent from './Agent'
+import ChatController from './ChatController'
 import SystemPromptTemplateController from './SystemPromptTemplateController'
 import DocsController from './DocsController'
 import UserController from './UserController'
@@ -26,8 +26,8 @@ const Controllers = {
     SystemEventController: Object.assign(SystemEventController, SystemEventController),
     OpenClawPushController: Object.assign(OpenClawPushController, OpenClawPushController),
     DashboardController: Object.assign(DashboardController, DashboardController),
-    ChatController: Object.assign(ChatController, ChatController),
     Agent: Object.assign(Agent, Agent),
+    ChatController: Object.assign(ChatController, ChatController),
     SystemPromptTemplateController: Object.assign(SystemPromptTemplateController, SystemPromptTemplateController),
     DocsController: Object.assign(DocsController, DocsController),
     UserController: Object.assign(UserController, UserController),

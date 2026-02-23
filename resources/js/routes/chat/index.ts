@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
-* @see \App\Http\Controllers\ChatController::index
-* @see app/Http/Controllers/ChatController.php:27
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:26
 * @route '/chat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ChatController::index
-* @see app/Http/Controllers/ChatController.php:27
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:26
 * @route '/chat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\ChatController::index
-* @see app/Http/Controllers/ChatController.php:27
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:26
 * @route '/chat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::index
-* @see app/Http/Controllers/ChatController.php:27
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:26
 * @route '/chat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +44,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::index
-* @see app/Http/Controllers/ChatController.php:27
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:26
 * @route '/chat'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,8 +54,8 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::index
-* @see app/Http/Controllers/ChatController.php:27
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:26
 * @route '/chat'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,8 +64,8 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::index
-* @see app/Http/Controllers/ChatController.php:27
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:26
 * @route '/chat'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,565 +81,99 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see \App\Http\Controllers\ChatController::projects
-* @see app/Http/Controllers/ChatController.php:43
-* @route '/chat/projects'
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:37
+* @route '/chat/{agentSession}'
 */
-export const projects = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: projects.url(options),
-    method: 'get',
-})
-
-projects.definition = {
-    methods: ["get","head"],
-    url: '/chat/projects',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ChatController::projects
-* @see app/Http/Controllers/ChatController.php:43
-* @route '/chat/projects'
-*/
-projects.url = (options?: RouteQueryOptions) => {
-    return projects.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ChatController::projects
-* @see app/Http/Controllers/ChatController.php:43
-* @route '/chat/projects'
-*/
-projects.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: projects.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::projects
-* @see app/Http/Controllers/ChatController.php:43
-* @route '/chat/projects'
-*/
-projects.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: projects.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::projects
-* @see app/Http/Controllers/ChatController.php:43
-* @route '/chat/projects'
-*/
-const projectsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: projects.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::projects
-* @see app/Http/Controllers/ChatController.php:43
-* @route '/chat/projects'
-*/
-projectsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: projects.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::projects
-* @see app/Http/Controllers/ChatController.php:43
-* @route '/chat/projects'
-*/
-projectsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: projects.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-projects.form = projectsForm
-
-/**
-* @see \App\Http\Controllers\ChatController::stream
-* @see app/Http/Controllers/ChatController.php:80
-* @route '/chat/stream'
-*/
-export const stream = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: stream.url(options),
-    method: 'post',
-})
-
-stream.definition = {
-    methods: ["post"],
-    url: '/chat/stream',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\ChatController::stream
-* @see app/Http/Controllers/ChatController.php:80
-* @route '/chat/stream'
-*/
-stream.url = (options?: RouteQueryOptions) => {
-    return stream.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ChatController::stream
-* @see app/Http/Controllers/ChatController.php:80
-* @route '/chat/stream'
-*/
-stream.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: stream.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::stream
-* @see app/Http/Controllers/ChatController.php:80
-* @route '/chat/stream'
-*/
-const streamForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: stream.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::stream
-* @see app/Http/Controllers/ChatController.php:80
-* @route '/chat/stream'
-*/
-streamForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: stream.url(options),
-    method: 'post',
-})
-
-stream.form = streamForm
-
-/**
-* @see \App\Http\Controllers\ChatController::upload
-* @see app/Http/Controllers/ChatController.php:328
-* @route '/chat/upload'
-*/
-export const upload = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: upload.url(options),
-    method: 'post',
-})
-
-upload.definition = {
-    methods: ["post"],
-    url: '/chat/upload',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\ChatController::upload
-* @see app/Http/Controllers/ChatController.php:328
-* @route '/chat/upload'
-*/
-upload.url = (options?: RouteQueryOptions) => {
-    return upload.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ChatController::upload
-* @see app/Http/Controllers/ChatController.php:328
-* @route '/chat/upload'
-*/
-upload.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: upload.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::upload
-* @see app/Http/Controllers/ChatController.php:328
-* @route '/chat/upload'
-*/
-const uploadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: upload.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::upload
-* @see app/Http/Controllers/ChatController.php:328
-* @route '/chat/upload'
-*/
-uploadForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: upload.url(options),
-    method: 'post',
-})
-
-upload.form = uploadForm
-
-/**
-* @see \App\Http\Controllers\ChatController::attachment
-* @see app/Http/Controllers/ChatController.php:355
-* @route '/chat/attachment/{attachment}'
-*/
-export const attachment = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: attachment.url(args, options),
-    method: 'get',
-})
-
-attachment.definition = {
-    methods: ["get","head"],
-    url: '/chat/attachment/{attachment}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ChatController::attachment
-* @see app/Http/Controllers/ChatController.php:355
-* @route '/chat/attachment/{attachment}'
-*/
-attachment.url = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { attachment: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            attachment: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        attachment: args.attachment,
-    }
-
-    return attachment.definition.url
-            .replace('{attachment}', parsedArgs.attachment.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ChatController::attachment
-* @see app/Http/Controllers/ChatController.php:355
-* @route '/chat/attachment/{attachment}'
-*/
-attachment.get = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: attachment.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::attachment
-* @see app/Http/Controllers/ChatController.php:355
-* @route '/chat/attachment/{attachment}'
-*/
-attachment.head = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: attachment.url(args, options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::attachment
-* @see app/Http/Controllers/ChatController.php:355
-* @route '/chat/attachment/{attachment}'
-*/
-const attachmentForm = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: attachment.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::attachment
-* @see app/Http/Controllers/ChatController.php:355
-* @route '/chat/attachment/{attachment}'
-*/
-attachmentForm.get = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: attachment.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::attachment
-* @see app/Http/Controllers/ChatController.php:355
-* @route '/chat/attachment/{attachment}'
-*/
-attachmentForm.head = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: attachment.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-attachment.form = attachmentForm
-
-/**
-* @see \App\Http\Controllers\ChatController::openclawLastUser
-* @see app/Http/Controllers/ChatController.php:415
-* @route '/chat/openclaw-last-user'
-*/
-export const openclawLastUser = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: openclawLastUser.url(options),
-    method: 'get',
-})
-
-openclawLastUser.definition = {
-    methods: ["get","head"],
-    url: '/chat/openclaw-last-user',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ChatController::openclawLastUser
-* @see app/Http/Controllers/ChatController.php:415
-* @route '/chat/openclaw-last-user'
-*/
-openclawLastUser.url = (options?: RouteQueryOptions) => {
-    return openclawLastUser.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ChatController::openclawLastUser
-* @see app/Http/Controllers/ChatController.php:415
-* @route '/chat/openclaw-last-user'
-*/
-openclawLastUser.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: openclawLastUser.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::openclawLastUser
-* @see app/Http/Controllers/ChatController.php:415
-* @route '/chat/openclaw-last-user'
-*/
-openclawLastUser.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: openclawLastUser.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::openclawLastUser
-* @see app/Http/Controllers/ChatController.php:415
-* @route '/chat/openclaw-last-user'
-*/
-const openclawLastUserForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: openclawLastUser.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::openclawLastUser
-* @see app/Http/Controllers/ChatController.php:415
-* @route '/chat/openclaw-last-user'
-*/
-openclawLastUserForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: openclawLastUser.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::openclawLastUser
-* @see app/Http/Controllers/ChatController.php:415
-* @route '/chat/openclaw-last-user'
-*/
-openclawLastUserForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: openclawLastUser.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-openclawLastUser.form = openclawLastUserForm
-
-/**
-* @see \App\Http\Controllers\ChatController::lastMessage
-* @see app/Http/Controllers/ChatController.php:366
-* @route '/chat/{conversation}/last-message'
-*/
-export const lastMessage = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: lastMessage.url(args, options),
-    method: 'get',
-})
-
-lastMessage.definition = {
-    methods: ["get","head"],
-    url: '/chat/{conversation}/last-message',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ChatController::lastMessage
-* @see app/Http/Controllers/ChatController.php:366
-* @route '/chat/{conversation}/last-message'
-*/
-lastMessage.url = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { conversation: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            conversation: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        conversation: args.conversation,
-    }
-
-    return lastMessage.definition.url
-            .replace('{conversation}', parsedArgs.conversation.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ChatController::lastMessage
-* @see app/Http/Controllers/ChatController.php:366
-* @route '/chat/{conversation}/last-message'
-*/
-lastMessage.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: lastMessage.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::lastMessage
-* @see app/Http/Controllers/ChatController.php:366
-* @route '/chat/{conversation}/last-message'
-*/
-lastMessage.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: lastMessage.url(args, options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::lastMessage
-* @see app/Http/Controllers/ChatController.php:366
-* @route '/chat/{conversation}/last-message'
-*/
-const lastMessageForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: lastMessage.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::lastMessage
-* @see app/Http/Controllers/ChatController.php:366
-* @route '/chat/{conversation}/last-message'
-*/
-lastMessageForm.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: lastMessage.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::lastMessage
-* @see app/Http/Controllers/ChatController.php:366
-* @route '/chat/{conversation}/last-message'
-*/
-lastMessageForm.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: lastMessage.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-lastMessage.form = lastMessageForm
-
-/**
-* @see \App\Http\Controllers\ChatController::show
-* @see app/Http/Controllers/ChatController.php:57
-* @route '/chat/{conversation}'
-*/
-export const show = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 show.definition = {
     methods: ["get","head"],
-    url: '/chat/{conversation}',
+    url: '/chat/{agentSession}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ChatController::show
-* @see app/Http/Controllers/ChatController.php:57
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:37
+* @route '/chat/{agentSession}'
 */
-show.url = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions) => {
+show.url = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { conversation: args }
+        args = { agentSession: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { agentSession: args.id }
     }
 
     if (Array.isArray(args)) {
         args = {
-            conversation: args[0],
+            agentSession: args[0],
         }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        conversation: args.conversation,
+        agentSession: typeof args.agentSession === 'object'
+        ? args.agentSession.id
+        : args.agentSession,
     }
 
     return show.definition.url
-            .replace('{conversation}', parsedArgs.conversation.toString())
+            .replace('{agentSession}', parsedArgs.agentSession.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ChatController::show
-* @see app/Http/Controllers/ChatController.php:57
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:37
+* @route '/chat/{agentSession}'
 */
-show.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::show
-* @see app/Http/Controllers/ChatController.php:57
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:37
+* @route '/chat/{agentSession}'
 */
-show.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::show
-* @see app/Http/Controllers/ChatController.php:57
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:37
+* @route '/chat/{agentSession}'
 */
-const showForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const showForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::show
-* @see app/Http/Controllers/ChatController.php:57
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:37
+* @route '/chat/{agentSession}'
 */
-showForm.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.get = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::show
-* @see app/Http/Controllers/ChatController.php:57
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:37
+* @route '/chat/{agentSession}'
 */
-showForm.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.head = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -652,236 +186,125 @@ showForm.head = (args: { conversation: string | number } | [conversation: string
 show.form = showForm
 
 /**
-* @see \App\Http\Controllers\ChatController::exportMethod
-* @see app/Http/Controllers/ChatController.php:305
-* @route '/chat/{conversation}/export'
+* @see \App\Http\Controllers\Agent\ChatController::send
+* @see app/Http/Controllers/Agent/ChatController.php:52
+* @route '/chat/send'
 */
-export const exportMethod = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: exportMethod.url(args, options),
-    method: 'get',
-})
-
-exportMethod.definition = {
-    methods: ["get","head"],
-    url: '/chat/{conversation}/export',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\ChatController::exportMethod
-* @see app/Http/Controllers/ChatController.php:305
-* @route '/chat/{conversation}/export'
-*/
-exportMethod.url = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { conversation: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            conversation: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        conversation: args.conversation,
-    }
-
-    return exportMethod.definition.url
-            .replace('{conversation}', parsedArgs.conversation.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\ChatController::exportMethod
-* @see app/Http/Controllers/ChatController.php:305
-* @route '/chat/{conversation}/export'
-*/
-exportMethod.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: exportMethod.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::exportMethod
-* @see app/Http/Controllers/ChatController.php:305
-* @route '/chat/{conversation}/export'
-*/
-exportMethod.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: exportMethod.url(args, options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::exportMethod
-* @see app/Http/Controllers/ChatController.php:305
-* @route '/chat/{conversation}/export'
-*/
-const exportMethodForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: exportMethod.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::exportMethod
-* @see app/Http/Controllers/ChatController.php:305
-* @route '/chat/{conversation}/export'
-*/
-exportMethodForm.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: exportMethod.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ChatController::exportMethod
-* @see app/Http/Controllers/ChatController.php:305
-* @route '/chat/{conversation}/export'
-*/
-exportMethodForm.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: exportMethod.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-exportMethod.form = exportMethodForm
-
-/**
-* @see \App\Http\Controllers\ChatController::appendMessage
-* @see app/Http/Controllers/ChatController.php:390
-* @route '/chat/{conversation}/message'
-*/
-export const appendMessage = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: appendMessage.url(args, options),
+export const send = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: send.url(options),
     method: 'post',
 })
 
-appendMessage.definition = {
+send.definition = {
     methods: ["post"],
-    url: '/chat/{conversation}/message',
+    url: '/chat/send',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\ChatController::appendMessage
-* @see app/Http/Controllers/ChatController.php:390
-* @route '/chat/{conversation}/message'
+* @see \App\Http\Controllers\Agent\ChatController::send
+* @see app/Http/Controllers/Agent/ChatController.php:52
+* @route '/chat/send'
 */
-appendMessage.url = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { conversation: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            conversation: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        conversation: args.conversation,
-    }
-
-    return appendMessage.definition.url
-            .replace('{conversation}', parsedArgs.conversation.toString())
-            .replace(/\/+$/, '') + queryParams(options)
+send.url = (options?: RouteQueryOptions) => {
+    return send.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ChatController::appendMessage
-* @see app/Http/Controllers/ChatController.php:390
-* @route '/chat/{conversation}/message'
+* @see \App\Http\Controllers\Agent\ChatController::send
+* @see app/Http/Controllers/Agent/ChatController.php:52
+* @route '/chat/send'
 */
-appendMessage.post = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: appendMessage.url(args, options),
+send.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: send.url(options),
     method: 'post',
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::appendMessage
-* @see app/Http/Controllers/ChatController.php:390
-* @route '/chat/{conversation}/message'
+* @see \App\Http\Controllers\Agent\ChatController::send
+* @see app/Http/Controllers/Agent/ChatController.php:52
+* @route '/chat/send'
 */
-const appendMessageForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: appendMessage.url(args, options),
+const sendForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: send.url(options),
     method: 'post',
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::appendMessage
-* @see app/Http/Controllers/ChatController.php:390
-* @route '/chat/{conversation}/message'
+* @see \App\Http\Controllers\Agent\ChatController::send
+* @see app/Http/Controllers/Agent/ChatController.php:52
+* @route '/chat/send'
 */
-appendMessageForm.post = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: appendMessage.url(args, options),
+sendForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: send.url(options),
     method: 'post',
 })
 
-appendMessage.form = appendMessageForm
+send.form = sendForm
 
 /**
-* @see \App\Http\Controllers\ChatController::destroy
-* @see app/Http/Controllers/ChatController.php:378
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:95
+* @route '/chat/{agentSession}'
 */
-export const destroy = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 destroy.definition = {
     methods: ["delete"],
-    url: '/chat/{conversation}',
+    url: '/chat/{agentSession}',
 } satisfies RouteDefinition<["delete"]>
 
 /**
-* @see \App\Http\Controllers\ChatController::destroy
-* @see app/Http/Controllers/ChatController.php:378
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:95
+* @route '/chat/{agentSession}'
 */
-destroy.url = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions) => {
+destroy.url = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { conversation: args }
+        args = { agentSession: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { agentSession: args.id }
     }
 
     if (Array.isArray(args)) {
         args = {
-            conversation: args[0],
+            agentSession: args[0],
         }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        conversation: args.conversation,
+        agentSession: typeof args.agentSession === 'object'
+        ? args.agentSession.id
+        : args.agentSession,
     }
 
     return destroy.definition.url
-            .replace('{conversation}', parsedArgs.conversation.toString())
+            .replace('{agentSession}', parsedArgs.agentSession.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\ChatController::destroy
-* @see app/Http/Controllers/ChatController.php:378
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:95
+* @route '/chat/{agentSession}'
 */
-destroy.delete = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::destroy
-* @see app/Http/Controllers/ChatController.php:378
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:95
+* @route '/chat/{agentSession}'
 */
-const destroyForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -892,11 +315,11 @@ const destroyForm = (args: { conversation: string | number } | [conversation: st
 })
 
 /**
-* @see \App\Http\Controllers\ChatController::destroy
-* @see app/Http/Controllers/ChatController.php:378
-* @route '/chat/{conversation}'
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:95
+* @route '/chat/{agentSession}'
 */
-destroyForm.delete = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -908,18 +331,102 @@ destroyForm.delete = (args: { conversation: string | number } | [conversation: s
 
 destroy.form = destroyForm
 
+/**
+* @see \App\Http\Controllers\Agent\ChatController::update
+* @see app/Http/Controllers/Agent/ChatController.php:112
+* @route '/chat/{agentSession}'
+*/
+export const update = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: update.url(args, options),
+    method: 'patch',
+})
+
+update.definition = {
+    methods: ["patch"],
+    url: '/chat/{agentSession}',
+} satisfies RouteDefinition<["patch"]>
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::update
+* @see app/Http/Controllers/Agent/ChatController.php:112
+* @route '/chat/{agentSession}'
+*/
+update.url = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { agentSession: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { agentSession: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            agentSession: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        agentSession: typeof args.agentSession === 'object'
+        ? args.agentSession.id
+        : args.agentSession,
+    }
+
+    return update.definition.url
+            .replace('{agentSession}', parsedArgs.agentSession.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::update
+* @see app/Http/Controllers/Agent/ChatController.php:112
+* @route '/chat/{agentSession}'
+*/
+update.patch = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: update.url(args, options),
+    method: 'patch',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::update
+* @see app/Http/Controllers/Agent/ChatController.php:112
+* @route '/chat/{agentSession}'
+*/
+const updateForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::update
+* @see app/Http/Controllers/Agent/ChatController.php:112
+* @route '/chat/{agentSession}'
+*/
+updateForm.patch = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+update.form = updateForm
+
 const chat = {
     index: Object.assign(index, index),
-    projects: Object.assign(projects, projects),
-    stream: Object.assign(stream, stream),
-    upload: Object.assign(upload, upload),
-    attachment: Object.assign(attachment, attachment),
-    openclawLastUser: Object.assign(openclawLastUser, openclawLastUser),
-    lastMessage: Object.assign(lastMessage, lastMessage),
     show: Object.assign(show, show),
-    export: Object.assign(exportMethod, exportMethod),
-    appendMessage: Object.assign(appendMessage, appendMessage),
+    send: Object.assign(send, send),
     destroy: Object.assign(destroy, destroy),
+    update: Object.assign(update, update),
 }
 
 export default chat
