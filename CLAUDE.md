@@ -109,14 +109,14 @@ Every change follows: **commit → push → pull on server → clear caches**.
 # 1. Commit and push
 git add <files> && git commit -m "message" && git push
 
-# 2. Pull on production server
-ssh mko 'cd /srv/markweb.kanary.org/web/app && git pull'
+# 2. Pull on production server (always ssh as markc, not root)
+ssh markc@mko 'cd /srv/markweb.kanary.org/web/app && git pull'
 
 # 3. Rebuild frontend ON SERVER (VITE_REVERB_* vars are baked at build time)
-ssh mko 'source ~/.bash_profile && cd /srv/markweb.kanary.org/web/app && bun run build'
+ssh markc@mko 'export PATH="$HOME/.bun/bin:$PATH" && cd /srv/markweb.kanary.org/web/app && bun run build'
 
 # 4. Clear caches
-ssh mko 'cd /srv/markweb.kanary.org/web/app && php artisan route:cache && php artisan config:cache'
+ssh markc@mko 'cd /srv/markweb.kanary.org/web/app && php artisan route:cache && php artisan config:cache'
 ```
 
 **Critical:** Always build frontend on the server, never locally — `VITE_REVERB_*` env vars get baked into JS at build time. Building locally bakes `localhost` values.
