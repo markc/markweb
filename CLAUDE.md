@@ -103,25 +103,16 @@ Model Context Protocol server with `Prompts/`, `Resources/`, `Servers/`, `Tools/
 
 ## Deploy Cycle (MANDATORY)
 
-Every change follows: **commit → push → pull on server → clear caches**.
+Every change follows: **commit → push → pull on server → rebuild → clear caches**.
 
 ```bash
-# 1. Commit and push
-git add <files> && git commit -m "message" && git push
-
-# 2. Pull on production server (always ssh as markc, not root)
-ssh markc@mko 'cd /srv/markweb.kanary.org/web/app && git pull'
-
-# 3. Rebuild frontend ON SERVER (VITE_REVERB_* vars are baked at build time)
-ssh markc@mko 'export PATH="$HOME/.bun/bin:$PATH" && cd /srv/markweb.kanary.org/web/app && bun run build'
-
-# 4. Clear caches
-ssh markc@mko 'cd /srv/markweb.kanary.org/web/app && php artisan route:cache && php artisan config:cache'
+bin/deploy              # Full deploy: push + pull + build + cache clear
+bin/deploy --skip-build # PHP-only changes: skip frontend rebuild
 ```
 
-**Critical:** Always build frontend on the server, never locally — `VITE_REVERB_*` env vars get baked into JS at build time. Building locally bakes `localhost` values.
+**Critical:** Frontend is always built on the server — `VITE_REVERB_*` env vars get baked into JS at build time. Building locally bakes `localhost` values.
 
-For PHP-only changes, skip step 3 (no rebuild needed).
+The script enforces clean main branch before deploying. SSH always as `markc@mko` (not root) to avoid ownership issues.
 
 ## Environment
 

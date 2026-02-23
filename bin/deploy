@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Deploy markweb to production (mko)
+# Usage: bin/deploy [--skip-build]
+
+set -euo pipefail
+
+REMOTE="markc@mko"
+APP="/srv/markweb.kanary.org/web/app"
+BUN='export PATH="$HOME/.bun/bin:$PATH"'
+
+# Check we're on main with a clean tree
+branch=$(git branch --show-current)
+if [[ "$branch" != "main" ]]; then
+    echo "ERROR: on branch '$branch', switch to main first" >&2
+    exit 1
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "ERROR: uncommitted changes, commit first" >&2
+    exit 1
+fi
+
+# Push to GitHub
+echo "==> Pushing to GitHub..."
+git push
+
+# Pull on server
+echo "==> Pulling on $REMOTE..."
+ssh "$REMOTE" "cd $APP && git pull"
+
+# Rebuild frontend unless --skip-build
+if [[ "${1:-}" != "--skip-build" ]]; then
+    echo "==> Building frontend..."
+    ssh "$REMOTE" "$BUN && cd $APP && bun run build"
+else
+    echo "==> Skipping frontend build"
+fi
+
+# Clear caches
+echo "==> Clearing caches..."
+ssh "$REMOTE" "cd $APP && php artisan route:cache && php artisan config:cache"
+
+echo "==> Done"
