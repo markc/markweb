@@ -14,25 +14,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::post('dashboard/settings', [App\Http\Controllers\DashboardController::class, 'updateSettings'])->name('dashboard.settings');
 
-    // Chat routes (laramail Prism-based SSE chat)
-    Route::get('chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
-    Route::get('chat/projects', [App\Http\Controllers\ChatController::class, 'projects'])->name('chat.projects');
-    Route::post('chat/stream', [App\Http\Controllers\ChatController::class, 'stream'])->name('chat.stream');
-    Route::post('chat/upload', [App\Http\Controllers\ChatController::class, 'upload'])->name('chat.upload');
-    Route::get('chat/attachment/{attachment}', [App\Http\Controllers\ChatController::class, 'attachment'])->name('chat.attachment');
-    Route::get('chat/openclaw-last-user', [App\Http\Controllers\ChatController::class, 'openclawLastUser'])->name('chat.openclawLastUser');
-    Route::get('chat/{conversation}/last-message', [App\Http\Controllers\ChatController::class, 'lastMessage'])->name('chat.lastMessage');
-    Route::get('chat/{conversation}', [App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
-    Route::get('chat/{conversation}/export', [App\Http\Controllers\ChatController::class, 'export'])->name('chat.export');
-    Route::post('chat/{conversation}/message', [App\Http\Controllers\ChatController::class, 'appendMessage'])->name('chat.appendMessage');
-    Route::delete('chat/{conversation}', [App\Http\Controllers\ChatController::class, 'destroy'])->name('chat.destroy');
+    // Chat routes (laraclaw-style Agent WebSocket chat via Reverb)
+    Route::get('chat', [App\Http\Controllers\Agent\ChatController::class, 'index'])->name('chat.index');
+    Route::get('chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'show'])->name('chat.show');
+    Route::post('chat/send', [App\Http\Controllers\Agent\ChatController::class, 'send'])->name('chat.send');
+    Route::delete('chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'destroy'])->name('chat.destroy');
+    Route::patch('chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'update'])->name('chat.update');
 
-    // Agent chat routes (laraclaw Reverb WebSocket chat)
-    Route::get('agent/chat', [App\Http\Controllers\Agent\ChatController::class, 'index'])->name('agent.chat.index');
-    Route::get('agent/chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'show'])->name('agent.chat.show');
-    Route::post('agent/chat/send', [App\Http\Controllers\Agent\ChatController::class, 'send'])->name('agent.chat.send');
-    Route::delete('agent/chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'destroy'])->name('agent.chat.destroy');
-    Route::patch('agent/chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'update'])->name('agent.chat.update');
+    // Legacy SSE chat routes (Prism-based streaming)
+    Route::get('sse-chat', [App\Http\Controllers\ChatController::class, 'index'])->name('sse-chat.index');
+    Route::get('sse-chat/projects', [App\Http\Controllers\ChatController::class, 'projects'])->name('sse-chat.projects');
+    Route::post('sse-chat/stream', [App\Http\Controllers\ChatController::class, 'stream'])->name('sse-chat.stream');
+    Route::post('sse-chat/upload', [App\Http\Controllers\ChatController::class, 'upload'])->name('sse-chat.upload');
+    Route::get('sse-chat/attachment/{attachment}', [App\Http\Controllers\ChatController::class, 'attachment'])->name('sse-chat.attachment');
+    Route::get('sse-chat/{conversation}', [App\Http\Controllers\ChatController::class, 'show'])->name('sse-chat.show');
+    Route::get('sse-chat/{conversation}/export', [App\Http\Controllers\ChatController::class, 'export'])->name('sse-chat.export');
+    Route::delete('sse-chat/{conversation}', [App\Http\Controllers\ChatController::class, 'destroy'])->name('sse-chat.destroy');
 
     Route::post('templates', [App\Http\Controllers\SystemPromptTemplateController::class, 'store'])->name('templates.store');
     Route::put('templates/{template}', [App\Http\Controllers\SystemPromptTemplateController::class, 'update'])->name('templates.update');

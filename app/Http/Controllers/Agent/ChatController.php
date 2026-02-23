@@ -25,7 +25,7 @@ class ChatController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Chat', [
+        return Inertia::render('chat', [
             'session' => null,
             'availableModels' => $this->modelRegistry->getAvailableModels(),
         ]);
@@ -40,7 +40,7 @@ class ChatController extends Controller
 
         $agentSession->load('messages');
 
-        return Inertia::render('Chat', [
+        return Inertia::render('chat', [
             'session' => $agentSession,
             'availableModels' => $this->modelRegistry->getAvailableModels(),
         ]);
@@ -103,7 +103,7 @@ class ChatController extends Controller
 
         event(new SessionDeleted($sessionId, $userId));
 
-        return redirect()->route('agent.chat.index');
+        return redirect()->route('chat.index');
     }
 
     /**

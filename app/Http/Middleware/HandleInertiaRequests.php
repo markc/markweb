@@ -48,9 +48,9 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'sidebarSessions' => fn () => $user
+            'sidebarConversations' => fn () => $user
                 ? AgentSession::where('user_id', $user->id)
-                    ->select(['id', 'title', 'model', 'updated_at'])
+                    ->select(['id', 'session_key', 'title', 'model', 'provider', 'last_activity_at', 'updated_at'])
                     ->latest('updated_at')
                     ->limit(50)
                     ->get()

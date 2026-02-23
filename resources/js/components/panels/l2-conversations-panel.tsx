@@ -1,21 +1,21 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Download, MessageSquare, Plus, Search, Trash2 } from 'lucide-react';
+import { MessageSquare, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useBasePath } from '@/hooks/use-base-path';
-import type { Conversation } from '@/types/chat';
+import type { AgentSession } from '@/types/agent';
 
 export default function ConversationsPanel() {
-    const { sidebarConversations, ziggy } = usePage<{
-        props: { sidebarConversations: Conversation[]; ziggy: { url: string; location: string } };
-    }>().props as unknown as { sidebarConversations: Conversation[]; ziggy: { url: string; location: string } };
+    const { sidebarConversations } = usePage<{
+        sidebarConversations: AgentSession[];
+    }>().props;
 
-    const conversations = sidebarConversations ?? [];
+    const conversations = (sidebarConversations ?? []) as AgentSession[];
     const [query, setQuery] = useState('');
     const { url } = useBasePath();
 
     // Derive current conversation ID from the URL path
-    const match = (typeof window !== 'undefined' ? window.location.pathname : ziggy?.location ?? '').match(/\/chat\/(\d+)/);
+    const match = (typeof window !== 'undefined' ? window.location.pathname : '').match(/\/chat\/(\d+)/);
     const currentId = match ? Number(match[1]) : undefined;
 
     const filtered = query
@@ -64,16 +64,6 @@ export default function ConversationsPanel() {
                             <span className="truncate">{conv.title}</span>
                         </Link>
                         <div className="absolute right-1 top-1/2 flex -translate-y-1/2 gap-0.5 rounded-lg border bg-background px-1 py-0.5 shadow-sm opacity-0 transition-opacity group-hover:opacity-100">
-                            <a
-                                href={url(`/chat/${conv.id}/export`)}
-                                target="_blank"
-                                rel="noopener"
-                                onClick={e => e.stopPropagation()}
-                                className="rounded p-1 hover:bg-muted"
-                                title="Export conversation"
-                            >
-                                <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                            </a>
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();

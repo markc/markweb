@@ -257,26 +257,35 @@ export async function sendEmail(
         }));
     }
 
-    await client.requestMany((b) => ({
-        emailSet: b.Email.set({
-            accountId,
-            create: { draft: emailCreate },
-        } as any),
-        submit: b.EmailSubmission.set({
-            accountId,
-            create: {
-                sub: {
-                    emailId: '#draft',
-                    identityId,
-                } as any,
-            },
-            onSuccessUpdateEmail: {
-                '#sub': {
-                    [`keywords/$draft`]: null,
-                } as any,
-            },
-        } as any),
-    }));
+    // Step 1: Create the draft email
+    const [setResult] = await client.api.Email.set({
+        accountId,
+        create: { draft: emailCreate },
+    } as any);
+
+    const created = (setResult as any).created?.draft;
+    if (!created?.id) {
+        const notCreated = (setResult as any).notCreated?.draft;
+        throw new Error(
+            notCreated?.description ?? 'Failed to create draft email',
+        );
+    }
+
+    // Step 2: Submit the email using the actual created ID
+    await client.api.EmailSubmission.set({
+        accountId,
+        create: {
+            sub: {
+                emailId: created.id,
+                identityId,
+            } as any,
+        },
+        onSuccessUpdateEmail: {
+            '#sub': {
+                [`keywords/$draft`]: null,
+            } as any,
+        },
+    } as any);
 }
 
 export function findMailboxByRole(mailboxes: MailboxNode[], role: string): MailboxNode | undefined {
