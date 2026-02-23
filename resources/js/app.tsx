@@ -1,0 +1,43 @@
+import './echo';
+import { createInertiaApp } from '@inertiajs/react';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { StrictMode, type ReactNode } from 'react';
+import { createRoot, hydrateRoot } from 'react-dom/client';
+import AppLayout from '@/layouts/app-layout';
+import '../css/app.css';
+
+const appName = import.meta.env.VITE_APP_NAME || 'markweb';
+
+const defaultLayout = (page: ReactNode) => <AppLayout>{page}</AppLayout>;
+
+createInertiaApp({
+    title: (title) => (title ? `${title} - ${appName}` : appName),
+    resolve: async (name) => {
+        const page = await resolvePageComponent(
+            `./pages/${name}.tsx`,
+            import.meta.glob('./pages/**/*.tsx'),
+        );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mod = page as any;
+        if (!mod.default.layout && !name.startsWith('auth/') && name !== 'welcome') {
+            mod.default.layout = defaultLayout;
+        }
+        return page;
+    },
+    setup({ el, App, props }) {
+        const app = (
+            <StrictMode>
+                <App {...props} />
+            </StrictMode>
+        );
+
+        if (el.hasChildNodes()) {
+            hydrateRoot(el, app);
+        } else {
+            createRoot(el).render(app);
+        }
+    },
+    progress: {
+        color: '#4B5563',
+    },
+});
