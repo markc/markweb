@@ -15,9 +15,9 @@ class ModelRegistry
         $available = [];
 
         foreach ($allModels as $provider => $models) {
-            $envKey = $providerKeys[$provider] ?? null;
+            $apiKey = $providerKeys[$provider] ?? null;
 
-            if ($envKey && ! empty(env($envKey))) {
+            if (! empty($apiKey)) {
                 $available[$provider] = collect($models)->map(fn ($name, $id) => [
                     'id' => $id,
                     'name' => $name,
