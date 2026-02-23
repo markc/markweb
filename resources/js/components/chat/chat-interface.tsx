@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AgentSession, AvailableModels, TextDeltaEvent, StreamEndEvent, StreamErrorEvent } from '@/types';
+import { send } from '@/routes/chat';
 import MessageList from './message-list';
 import MessageInput from './message-input';
 
@@ -153,7 +154,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
             setMessages((prev) => [...prev, userMsg]);
 
             try {
-                const response = await fetch(route('chat.send'), {
+                const response = await fetch(send.url(), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
