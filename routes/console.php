@@ -10,12 +10,19 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Mesh: mko self-heartbeat (this node is the app server)
+// Mesh: self-heartbeat (identity from env)
 Schedule::call(function () {
+    $name = config('mesh.node_name');
+    $wgIp = config('mesh.node_wg_ip');
+
+    if (! $name) {
+        return;
+    }
+
     $node = MeshNode::updateOrCreate(
-        ['name' => 'mko'],
+        ['name' => $name],
         [
-            'wg_ip' => '172.16.1.5',
+            'wg_ip' => $wgIp,
             'status' => 'online',
             'last_heartbeat_at' => now(),
             'meta' => [
