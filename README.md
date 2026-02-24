@@ -1,59 +1,92 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# markweb
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A unified command-and-control platform for personal infrastructure, AI agents, and communications — built on Laravel 12, Inertia 2, and React 19.
 
-## About Laravel
+## What is markweb?
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+markweb consolidates three previously separate projects into a single mesh-aware application:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **AI Agent Platform** — Multi-model chat with tool use, sandboxed code execution, memory, and routines. Built on `laravel/ai` with Anthropic as the primary provider.
+- **JMAP Webmail & PIM** — Full email client backed by Stalwart Mail Server (JMAP), with CalDAV/CardDAV contacts and calendars via SabreDAV.
+- **Mesh C&C** — Real-time dashboard for a WireGuard-connected cluster of nodes, with 30-second heartbeats, status broadcasting, and centralised oversight.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The UI uses a **Dual Carousel Sidebar** layout — two independently navigable sliding panels (mail, conversations, docs, settings) flanking a central workspace, styled with OKLCH colour schemes and glassmorphism.
 
-## Learning Laravel
+## Why?
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Too many tabs. Too many logins. Too many single-purpose tools that don't talk to each other.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+markweb exists because managing a personal infrastructure mesh — mail servers, DNS, backups, AI models, WebSocket channels — shouldn't require context-switching between a dozen disconnected interfaces. One app, one login, one place to see everything.
 
-## Laravel Sponsors
+The `web.*` subdomain convention reflects this: `web.motd.com`, `web.kanary.org`, `web.goldcoast.org` — each node's C&C entry point, gated by HTTP basic auth before you even reach the login page.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Architecture
 
-### Premium Partners
+```
+Laravel 12 + Inertia 2 + React 19 + TypeScript
+├── Agent/        AI runtime, tool execution, session management
+├── Mail/         JMAP client (Stalwart), message threading
+├── Memory/       pgvector embeddings, semantic search
+├── Security/     Content sanitisation, injection detection
+├── Sandbox/      Proxmox CT pool for code execution
+├── Routines/     Scheduled agent actions
+├── Tools/        Bash, HTTP, DateTime (extensible)
+└── Dav/          SabreDAV CalDAV/CardDAV backends
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Stack
 
-## Contributing
+| Layer | Technology |
+|-------|-----------|
+| Runtime | PHP 8.4+, FrankenPHP |
+| Framework | Laravel 12, Fortify (auth + 2FA) |
+| Frontend | React 19, Inertia 2, Tailwind CSS 4, Radix UI |
+| Database | PostgreSQL + pgvector + tsvector |
+| WebSocket | Laravel Reverb |
+| Mail | Stalwart Mail Server (JMAP/IMAP/SMTP) |
+| Embeddings | Ollama (nomic-embed-text) |
+| LLM | Anthropic Claude (via laravel/ai) |
+| Package manager | Bun |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Mesh deployment
 
-## Code of Conduct
+markweb runs as a replicated instance across multiple nodes, each with its own local database, mail server, and Ollama instance. Nodes heartbeat into their own PostgreSQL and broadcast state via Reverb.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Node | URL | Role |
+|------|-----|------|
+| mmc | `web.motd.com` | Production |
+| mko | `web.kanary.org` | Staging / dev |
+| cachyos | `web.goldcoast.org` | Local workstation |
 
-## Security Vulnerabilities
+Identity is config-driven — each node reads `MESH_NODE_NAME` and `MESH_NODE_WG_IP` from `.env`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Getting started
 
-## License
+```bash
+git clone https://github.com/markc/markweb.git
+cd markweb
+composer install
+bun install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+bun run build
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Requires PostgreSQL with pgvector, a Stalwart Mail instance for JMAP, and Ollama with `nomic-embed-text` for embeddings.
+
+```bash
+composer dev    # Starts server, Reverb, queue worker, Pail logs, Vite
+```
+
+## Origin story
+
+markweb was born on **23 February 2026** in a single intense weekend session. Three existing Laravel projects — **laraclaw** (AI agents), **laramail** (JMAP webmail), and a mesh monitoring prototype — were merged into one unified platform.
+
+The concept, architecture, and every line of code were created by **Mark Constable** ([@markc](https://github.com/markc)), working in close collaboration with **Claude Code** (Anthropic's AI coding agent). What would normally be weeks of integration work — unifying service layers, resolving namespace conflicts, building a coherent UI, deploying across three nodes — was accomplished in days through continuous human-AI pair programming.
+
+This is software built the way it should be: one person's vision, executed at the speed of thought.
+
+## Licence
+
+[MIT](https://opensource.org/licenses/MIT)
