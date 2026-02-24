@@ -35,4 +35,6 @@ return [
         ],
     ],
 
+    'system_event_token' => env('SYSTEM_EVENT_TOKEN'),
+
 ];
