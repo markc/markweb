@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Security — Public Repo, No Sensitive Data
+
+**This is a public repository.** Never commit any of the following:
+- Public IP addresses (server IPs, WAN IPs) — use hostnames or WireGuard IPs only
+- API keys, tokens, passwords, or secrets (use `.env`, never committed)
+- SSH key paths, usernames, or server access details
+- Internal network topology (subnet ranges, port mappings, firewall rules)
+
+When writing journal entries or documentation, refer to nodes by name (`mmc`, `mko`, `cachyos`) without exposing their public IPs or infrastructure details. WireGuard IPs (172.16.x.x) and localhost addresses are acceptable.
+
 ## Project Overview
 
 markweb is a unified Laravel 12 + Inertia 2 + React 19 platform consolidating:
