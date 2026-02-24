@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laravel Reverb WebSocket Topologies — Deep Dive</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --accent-1: #e94560;
+            --accent-2: #0f3460;
+            --accent-3: #533483;
+            --accent-4: #00d2ff;
+            --accent-5: #7b2ff7;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6c6c80;
+            --success: #00e676;
+            --warning: #ffab40;
+            --info: #40c4ff;
+            --border: rgba(255,255,255,0.08);
+            --glow-1: rgba(233, 69, 96, 0.3);
+            --glow-2: rgba(0, 210, 255, 0.3);
+            --glow-3: rgba(123, 47, 247, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: -1;
+        }
+
+        .bg-orbs {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-orbs::before, .bg-orbs::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-orbs::before {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(233,69,96,0.15), transparent 70%);
+            top: -200px; left: -200px;
+        }
+
+        .bg-orbs::after {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,210,255,0.1), transparent 70%);
+            bottom: -200px; right: -200px;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(100px, -50px) scale(1.1); }
+            66% { transform: translate(-50px, 80px) scale(0.9); }
+        }
+
+        /* Header */
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-5));
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-4) 50%, var(--accent-1) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 80px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* Answer Banner */
+        .answer-banner {
+            background: linear-gradient(135deg, var(--bg-card), var(--accent-2));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-4), var(--accent-5));
+        }
+
+        .answer-banner h2 {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+            color: var(--accent-4);
+        }
+
+        .answer-banner .answer-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .answer-banner .answer-text strong {
+            color: var(--accent-4);
+        }
+
+        .answer-banner .verdict {
+            margin-top: 24px;
+            padding: 20px;
+            background: rgba(0, 230, 118, 0.08);
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--success);
+        }
+
+        /* Topology Cards */
+        .topology-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        .topology-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .topology-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .topology-card.one-to-one {
+            box-shadow: 0 0 40px rgba(233, 69, 96, 0.08);
+        }
+        .topology-card.one-to-one:hover {
+            box-shadow: 0 0 60px rgba(233, 69, 96, 0.15);
+        }
+
+        .topology-card.hub-spoke {
+            box-shadow: 0 0 40px rgba(0, 210, 255, 0.08);
+        }
+        .topology-card.hub-spoke:hover {
+            box-shadow: 0 0 60px rgba(0, 210, 255, 0.15);
+        }
+
+        .topology-card.mesh {
+            box-shadow: 0 0 40px rgba(123, 47, 247, 0.08);
+        }
+        .topology-card.mesh:hover {
+            box-shadow: 0 0 60px rgba(123, 47, 247, 0.15);
+        }
+
+        .card-header {
+            padding: 30px 35px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .one-to-one .card-icon { background: linear-gradient(135deg, var(--accent-1), #ff6b8a); }
+        .hub-spoke .card-icon { background: linear-gradient(135deg, var(--accent-4), #4dd0e1); }
+        .mesh .card-icon { background: linear-gradient(135deg, var(--accent-5), #a855f7); }
+
+        .card-header-text h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .card-header-text .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .support-badge {
+            margin-left: auto;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-native { background: rgba(0, 230, 118, 0.15); color: var(--success); border: 1px solid rgba(0,230,118,0.3); }
+        .badge-pattern { background: rgba(255, 171, 64, 0.15); color: var(--warning); border: 1px solid rgba(255,171,64,0.3); }
+
+        .card-body {
+            padding: 0 35px 35px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-description {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .card-description p { margin-bottom: 12px; }
+
+        /* SVG Diagram Area */
+        .diagram-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+        }
+
+        .diagram-container svg {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Code Examples */
+        .code-section {
+            padding: 0 35px 35px;
+        }
+
+        .code-block {
+            background: #0d1117;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border);
+            gap: 8px;
+        }
+
+        .code-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+        .code-dot:nth-child(1) { background: #ff5f56; }
+        .code-dot:nth-child(2) { background: #ffbd2e; }
+        .code-dot:nth-child(3) { background: #27ca40; }
+
+        .code-filename {
+            margin-left: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .code-block pre {
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            font-family: 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+        }
+
+        .code-block code {
+            color: #e6edf3;
+        }
+
+        .kw { color: #ff7b72; }
+        .fn { color: #d2a8ff; }
+        .str { color: #a5d6ff; }
+        .cm { color: #8b949e; }
+        .var { color: #ffa657; }
+        .cls { color: #7ee787; }
+        .op { color: #ff7b72; }
+        .num { color: #79c0ff; }
+
+        /* Comparison Table */
+        .comparison-table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background: var(--bg-card);
+            padding: 16px 24px;
+            text-align: left;
+            font-weight: 700;
+            white-space: nowrap;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .comparison-table td {
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .comparison-table tbody tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .check { color: var(--success); font-weight: bold; }
+        .partial { color: var(--warning); font-weight: bold; }
+        .cross { color: var(--accent-1); font-weight: bold; }
+
+        /* Architecture Deep Dive */
+        .arch-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .arch-diagram h3 {
+            font-size: 1.4rem;
+            margin-bottom: 24px;
+        }
+
+        .arch-diagram svg {
+            max-width: 100%;
+        }
+
+        /* Channel Types */
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .channel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: transform 0.3s;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .channel-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .channel-card .ch-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .channel-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .channel-card code {
+            background: rgba(255,255,255,0.06);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-4);
+        }
+
+        /* Key Insight boxes */
+        .insight-box {
+            background: rgba(123, 47, 247, 0.08);
+            border: 1px solid rgba(123, 47, 247, 0.25);
+            border-radius: 14px;
+            padding: 24px 28px;
+            margin-top: 16px;
+        }
+
+        .insight-box h4 {
+            color: var(--accent-5);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .insight-box p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tabs */
+        .tab-container {
+            margin-top: 16px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 0;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px 12px 0 0;
+            padding: 8px 8px 0;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #0d1117;
+            color: var(--text-primary);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-secondary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Animated connection lines */
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        @keyframes pulse-node {
+            0%, 100% { r: 22; opacity: 1; }
+            50% { r: 25; opacity: 0.8; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        .animated-line {
+            stroke-dasharray: 8 4;
+            animation: dash 1s linear infinite;
+        }
+
+        .node-pulse {
+            animation: pulse-node 2s ease-in-out infinite;
+        }
+
+        .glow-pulse {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-2); border-radius: 4px; }
+
+        /* Summary boxes */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid { grid-template-columns: 1fr; }
+        }
+
+        .summary-item {
+            padding: 24px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .summary-item.s1 { background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233,69,96,0.25); }
+        .summary-item.s2 { background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0,210,255,0.25); }
+        .summary-item.s3 { background: rgba(123, 47, 247, 0.1); border: 1px solid rgba(123,47,247,0.25); }
+
+        .summary-item .emoji { font-size: 2rem; margin-bottom: 8px; }
+        .summary-item h4 { font-size: 1rem; margin-bottom: 4px; }
+        .summary-item p { font-size: 0.85rem; color: var(--text-secondary); }
+
+        /* Horizontal scaling diagram */
+        .scale-note {
+            background: rgba(0,210,255,0.07);
+            border: 1px solid rgba(0,210,255,0.2);
+            border-radius: 14px;
+            padding: 24px 28px;
+            margin-top: 30px;
+        }
+        .scale-note h4 { color: var(--accent-4); margin-bottom: 8px; }
+        .scale-note p { color: var(--text-secondary); font-size: 0.92rem; }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs"></div>
+
+<!-- ==================== HERO ==================== -->
+<header class="hero">
+    <div class="hero-badge">Laravel Reverb WebSockets</div>
+    <h1>WebSocket Topologies<br>in Laravel Reverb</h1>
+    <p>Is it strictly one-to-one? Can it do hub-and-spoke? What about many-to-many mesh? Let's break down every pattern with animated diagrams and real code.</p>
+</header>
+
+<div class="container">
+
+<!-- ==================== THE ANSWER ==================== -->
+<div class="answer-banner">
+    <h2>⚡ The Short Answer</h2>
+    <div class="answer-text">
+        <p>Laravel Reverb is <strong>not</strong> strictly one-to-one peer-to-peer. In fact, that's the <em>least</em> natural pattern for it. Reverb is a <strong>centralized WebSocket server</strong> — every client connects to Reverb (the hub), and Reverb routes messages based on <strong>channel subscriptions</strong>.</p>
+        <p>Its <strong>native, default architecture is hub-and-spoke</strong>. The server sits at the center; clients are spokes. But through Laravel's channel system (public, private, and presence channels), you can absolutely achieve:</p>
+        <ul style="margin: 12px 0 12px 24px; list-style: disc;">
+            <li><strong>One-to-One</strong> — Private channels scoped to a specific user (e.g., <code>private-user.{id}</code>)</li>
+            <li><strong>Hub-and-Spoke (Broadcast)</strong> — One event, many subscribers. This is the default pattern.</li>
+            <li><strong>Many-to-Many (Mesh-like)</strong> — Presence channels where every participant can send events that all others receive, creating a logical mesh — but the <em>physical</em> topology always routes through the Reverb server.</li>
+        </ul>
+    </div>
+    <div class="verdict">
+        ✅ All three patterns are supported. The physical topology is always hub-and-spoke (server-mediated), but the <em>logical</em> communication pattern can be one-to-one, one-to-many, or many-to-many.
+    </div>
+</div>
+
+<!-- ==================== ARCHITECTURE OVERVIEW ==================== -->
+<div class="section">
+    <div class="section-header">
+        <h2>🏗️ How Reverb Actually Works</h2>
+        <p>Understanding the physical architecture is key to understanding why all three patterns are possible</p>
+    </div>
+
+    <div class="arch-diagram">
+        <h3>Physical Architecture: Always Server-Mediated</h3>
+        <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background -->
+            <defs>
+                <filter id="glow1">
+                    <feGaussianBlur stdDeviation="4" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <linearGradient id="grad-server" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#e94560"/>
+                    <stop offset="100%" style="stop-color:#ff6b8a"/>
+                </linearGradient>
+                <linearGradient id="grad-laravel" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#ff7b72"/>
+                    <stop offset="100%" style="stop-color:#ffa657"/>
+                </linearGradient>
+                <linearGradient id="grad-client" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#00d2ff"/>
+                    <stop offset="100%" style="stop-color:#4dd0e1"/>
+                </linearGradient>
+            </defs>
+
+            <!-- Laravel App -->
+            <rect x="20" y="130" rx="14" ry="14" width="160" height="80" fill="url(#grad-laravel)" opacity="0.9"/>
+            <text x="100" y="165" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">Laravel App</text>
+            <text x="100" y="185" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="11">Events / Broadcasting</text>
+
+            <!-- Arrow Laravel → Reverb -->
+            <line x1="180" y1="170" x2="290" y2="170" stroke="#ffa657" stroke-width="2" class="animated-line"/>
+            <polygon points="288,164 300,170 288,176" fill="#ffa657"/>
+            <text x="235" y="158" text-anchor="middle" fill="#ffa657" font-size="10">HTTP API</text>
+
+            <!-- Reverb Server (Center) -->
+            <circle cx="400" cy="170" r="65" fill="url(#grad-server)" opacity="0.15"/>
+            <circle cx="400" cy="170" r="50" fill="url(#grad-server)" filter="url(#glow1)"/>
+            <text x="400" y="165" text-anchor="middle" fill="#fff" font-weight="800" font-size="15">Reverb</text>
+            <text x="400" y="182" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">WS Server</text>
+
+            <!-- Clients -->
+            <g>
+                <!-- Client 1 -->
+                <line x1="450" y1="140" x2="580" y2="60" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                <circle cx="610" cy="50" r="28" fill="url(#grad-client)" opacity="0.15"/>
+                <circle cx="610" cy="50" r="20" fill="url(#grad-client)"/>
+                <text x="610" y="54" text-anchor="middle" fill="#fff" font-weight="700" font-size="10">User A</text>
+
+                <!-- Client 2 -->
+                <line x1="452" y1="170" x2="580" y2="170" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                <circle cx="610" cy="170" r="28" fill="url(#grad-client)" opacity="0.15"/>
+                <circle cx="610" cy="170" r="20" fill="url(#grad-client)"/>
+                <text x="610" y="174" text-anchor="middle" fill="#fff" font-weight="700" font-size="10">User B</text>
+
+                <!-- Client 3 -->
+                <line x1="450" y1="200" x2="580" y2="290" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                <circle cx="610" cy="290" r="28" fill="url(#grad-client)" opacity="0.15"/>
+                <circle cx="610" cy="290" r="20" fill="url(#grad-client)"/>
+                <text x="610" y="294" text-anchor="middle" fill="#fff" font-weight="700" font-size="10">User C</text>
+
+                <!-- Client 4 -->
+                <line x1="435" y1="220" x2="720" y2="290" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                <circle cx="750" cy="290" r="28" fill="url(#grad-client)" opacity="0.15"/>
+                <circle cx="750" cy="290" r="20" fill="url(#grad-client)"/>
+                <text x="750" y="294" text-anchor="middle" fill="#fff" font-weight="700" font-size="10">User D</text>
+
+                <!-- Client 5 -->
+                <line x1="435" y1="130" x2="720" y2="50" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                <circle cx="750" cy="50" r="28" fill="url(#grad-client)" opacity="0.15"/>
+                <circle cx="750" cy="50" r="20" fill="url(#grad-client)"/>
+                <text x="750" y="54" text-anchor="middle" fill="#fff" font-weight="700" font-size="10">User E</text>
+            </g>
+
+            <!-- Labels -->
+            <text x="610" y="335" text-anchor="middle" fill="#8b949e" font-size="11">WebSocket Connections (persistent, bidirectional)</text>
+            <text x="100" y="235" text-anchor="middle" fill="#8b949e" font-size="11">Your Application Code</text>
+        </svg>
+
+        <div class="scale-note">
+            <h4>🔑 Key Insight</h4>
+            <p>Reverb uses the <strong>Pusher protocol</strong>. Clients never talk directly to each other — every message goes through the Reverb server. This is what makes it a <strong>hub-and-spoke physical topology</strong>. However, by using channels intelligently, you control the <em>logical</em> topology — who hears what.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== THREE TOPOLOGIES ==================== -->
+<div class="section">
+    <div class="section-header">
+        <h2>🔌 The Three Logical Topologies</h2>
+        <p>Same physical hub-and-spoke, three different logical communication patterns</p>
+    </div>
+
+    <div class="topology-grid">
+
+        <!-- ========== 1. ONE-TO-ONE ========== -->
+        <div class="topology-card one-to-one">
+            <div class="card-header">
+                <div class="card-icon">🔒</div>
+                <div class="card-header-text">
+                    <h3>1 : 1 — One-to-One (Private)</h3>
+                    <div class="subtitle">Private channel scoped to a single user</div>
+                </div>
+                <span class="support-badge badge-native">✓ NATIVE</span>
+            </div>
+            <div class="card-body">
+                <div class="card-description">
+                    <p>Use a <strong>private channel</strong> targeted at a specific user. Laravel's built-in notification broadcasting (<code>private-App.Models.User.{id}</code>) does exactly this.</p>
+                    <p>The server dispatches an event, and only the user subscribed to that private channel receives it. Think: personal notifications, direct messages, account alerts.</p>
+                    <div class="insight-box">
+                        <h4>⚠️ Not True Peer-to-Peer</h4>
+                        <p>Even in 1:1, messages route through Reverb. User A's browser sends an HTTP request to Laravel → Laravel fires an event → Reverb pushes it to User B. It's server-mediated, not WebRTC-style P2P.</p>
+                    </div>
+                </div>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="g-red" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#e94560"/>
+                                <stop offset="100%" style="stop-color:#ff6b8a"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- User A -->
+                        <circle cx="60" cy="80" r="30" fill="#e94560" opacity="0.15"/>
+                        <circle cx="60" cy="80" r="22" fill="url(#g-red)" class="node-pulse"/>
+                        <text x="60" y="84" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">A</text>
+                        <text x="60" y="125" text-anchor="middle" fill="#8b949e" font-size="10">Sender</text>
+
+                        <!-- Reverb -->
+                        <rect x="140" y="55" rx="12" ry="12" width="80" height="50" fill="#e94560" opacity="0.2" stroke="#e94560" stroke-width="1"/>
+                        <text x="180" y="77" text-anchor="middle" fill="#e94560" font-size="11" font-weight="700">Reverb</text>
+                        <text x="180" y="92" text-anchor="middle" fill="#8b949e" font-size="9">private-user.5</text>
+
+                        <!-- User B -->
+                        <circle cx="300" cy="80" r="30" fill="#e94560" opacity="0.15"/>
+                        <circle cx="300" cy="80" r="22" fill="url(#g-red)" class="node-pulse" style="animation-delay: -1s"/>
+                        <text x="300" y="84" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">B</text>
+                        <text x="300" y="125" text-anchor="middle" fill="#8b949e" font-size="10">Receiver</text>
+
+                        <!-- Arrows -->
+                        <line x1="82" y1="80" x2="138" y2="80" stroke="#e94560" stroke-width="2" class="animated-line"/>
+                        <polygon points="136,74 146,80 136,86" fill="#e94560"/>
+
+                        <line x1="222" y1="80" x2="276" y2="80" stroke="#e94560" stroke-width="2" class="animated-line"/>
+                        <polygon points="274,74 284,80 274,86" fill="#e94560"/>
+
+                        <!-- Greyed-out users -->
+                        <circle cx="300" cy="190" r="18" fill="none" stroke="#333" stroke-width="1.5" stroke-dasharray="4 3"/>
+                        <text x="300" y="194" text-anchor="middle" fill="#555" font-size="10">C</text>
+                        <text x="300" y="220" text-anchor="middle" fill="#444" font-size="9">not subscribed</text>
+
+                        <circle cx="300" cy="255" r="18" fill="none" stroke="#333" stroke-width="1.5" stroke-dasharray="4 3"/>
+                        <text x="300" y="259" text-anchor="middle" fill="#555" font-size="10">D</text>
+                        <text x="300" y="280" text-anchor="middle" fill="#444" font-size="9">not subscribed</text>
+
+                        <!-- X marks -->
+                        <text x="250" y="193" text-anchor="middle" fill="#e94560" font-size="16" opacity="0.5">✕</text>
+                        <text x="250" y="258" text-anchor="middle" fill="#e94560" font-size="16" opacity="0.5">✕</text>
+                    </svg>
+                </div>
+            </div>
+            <div class="code-section">
+                <div class="tab-container" id="tabs-1to1">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('tabs-1to1', 0)">Event</button>
+                        <button class="tab-btn" onclick="switchTab('tabs-1to1', 1)">Listener (JS)</button>
+                        <button class="tab-btn" onclick="switchTab('tabs-1to1', 2)">Dispatch</button>
+                    </div>
+                    <div class="tab-content active">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">app/Events/DirectMessage.php</span>
+                            </div>
+                            <pre><code><span class="kw">class</span> <span class="cls">DirectMessage</span> <span class="kw">implements</span> <span class="cls">ShouldBroadcast</span>
+{
+    <span class="kw">use</span> <span class="cls">Dispatchable</span>, <span class="cls">InteractsWithSockets</span>, <span class="cls">SerializesModels</span>;
+
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">public</span> <span class="cls">string</span> <span class="var">$message</span>,
+        <span class="kw">public</span> <span class="cls">int</span> <span class="var">$recipientId</span>,
+    ) {}
+
+    <span class="cm">// Only the specific user receives this</span>
+    <span class="kw">public function</span> <span class="fn">broadcastOn</span>(): <span class="cls">Channel</span>
+    {
+        <span class="kw">return new</span> <span class="cls">PrivateChannel</span>(
+            <span class="str">'user.'</span> . <span class="var">$this</span>-><span class="var">recipientId</span>
+        );
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">resources/js/echo.js</span>
+                            </div>
+                            <pre><code><span class="cm">// Only User B (id=5) subscribes & receives</span>
+<span class="var">Echo</span>.<span class="fn">private</span>(<span class="str">'user.5'</span>)
+    .<span class="fn">listen</span>(<span class="str">'DirectMessage'</span>, (<span class="var">e</span>) => {
+        <span class="var">console</span>.<span class="fn">log</span>(<span class="var">e</span>.<span class="var">message</span>);
+        <span class="cm">// → "Hey, are you free tonight?"</span>
+    });</code></pre>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">app/Http/Controllers/ChatController.php</span>
+                            </div>
+                            <pre><code><span class="cm">// User A sends a DM to User B (id=5)</span>
+<span class="fn">broadcast</span>(<span class="kw">new</span> <span class="cls">DirectMessage</span>(
+    <span class="var">message</span>: <span class="str">'Hey, are you free tonight?'</span>,
+    <span class="var">recipientId</span>: <span class="num">5</span>,
+));</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 2. HUB AND SPOKE ========== -->
+        <div class="topology-card hub-spoke">
+            <div class="card-header">
+                <div class="card-icon">📡</div>
+                <div class="card-header-text">
+                    <h3>1 : N — Hub-and-Spoke (Broadcast)</h3>
+                    <div class="subtitle">One source, many subscribers — the default pattern</div>
+                </div>
+                <span class="support-badge badge-native">✓ DEFAULT</span>
+            </div>
+            <div class="card-body">
+                <div class="card-description">
+                    <p>This is <strong>what Reverb was designed for</strong>. The server broadcasts an event to a channel, and every client subscribed to that channel receives it simultaneously.</p>
+                    <p>Use public channels for open broadcasts, or private channels for authenticated groups. Think: live dashboards, sports scores, auction updates, system-wide notifications.</p>
+                    <div class="insight-box">
+                        <h4>💡 This IS the Pusher Model</h4>
+                        <p>Reverb implements the Pusher protocol. The entire Pusher/Reverb model is fundamentally a pub/sub hub-and-spoke: server publishes, clients subscribe. It's one-directional by default — server → clients. Client-to-server requires "client events" on presence channels or HTTP back to Laravel.</p>
+                    </div>
+                </div>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 360 300" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="g-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#00d2ff"/>
+                                <stop offset="100%" style="stop-color:#4dd0e1"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Reverb Hub -->
+                        <circle cx="100" cy="150" r="50" fill="#00d2ff" opacity="0.1"/>
+                        <circle cx="100" cy="150" r="38" fill="url(#g-blue)" filter="url(#glow1)"/>
+                        <text x="100" y="146" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Reverb</text>
+                        <text x="100" y="162" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">Hub</text>
+
+                        <!-- Spokes -->
+                        <g>
+                            <line x1="138" y1="130" x2="230" y2="40" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                            <circle cx="255" cy="30" r="22" fill="url(#g-blue)" opacity="0.8"/>
+                            <text x="255" y="34" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">A</text>
+
+                            <line x1="140" y1="145" x2="230" y2="110" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                            <circle cx="255" cy="100" r="22" fill="url(#g-blue)" opacity="0.8"/>
+                            <text x="255" y="104" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">B</text>
+
+                            <line x1="140" y1="155" x2="230" y2="180" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                            <circle cx="255" cy="170" r="22" fill="url(#g-blue)" opacity="0.8"/>
+                            <text x="255" y="174" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">C</text>
+
+                            <line x1="138" y1="170" x2="230" y2="250" stroke="#00d2ff" stroke-width="1.5" class="animated-line"/>
+                            <circle cx="255" cy="240" r="22" fill="url(#g-blue)" opacity="0.8"/>
+                            <text x="255" y="244" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">D</text>
+
+                            <!-- Arrows -->
+                            <polygon points="228,42 240,36 234,50" fill="#00d2ff"/>
+                            <polygon points="228,108 240,102 234,118" fill="#00d2ff"/>
+                            <polygon points="228,175 240,170 234,185" fill="#00d2ff"/>
+                            <polygon points="228,246 240,240 234,256" fill="#00d2ff"/>
+                        </g>
+
+                        <text x="180" y="290" text-anchor="middle" fill="#8b949e" font-size="10">All subscribers receive the same event</text>
+                    </svg>
+                </div>
+            </div>
+            <div class="code-section">
+                <div class="tab-container" id="tabs-hub">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('tabs-hub', 0)">Public Broadcast</button>
+                        <button class="tab-btn" onclick="switchTab('tabs-hub', 1)">Private Group</button>
+                        <button class="tab-btn" onclick="switchTab('tabs-hub', 2)">Listener (JS)</button>
+                    </div>
+                    <div class="tab-content active">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">app/Events/ScoreUpdated.php</span>
+                            </div>
+                            <pre><code><span class="kw">class</span> <span class="cls">ScoreUpdated</span> <span class="kw">implements</span> <span class="cls">ShouldBroadcast</span>
+{
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">public</span> <span class="cls">string</span> <span class="var">$team</span>,
+        <span class="kw">public</span> <span class="cls">int</span> <span class="var">$score</span>,
+    ) {}
+
+    <span class="cm">// Public — anyone can subscribe</span>
+    <span class="kw">public function</span> <span class="fn">broadcastOn</span>(): <span class="cls">Channel</span>
+    {
+        <span class="kw">return new</span> <span class="cls">Channel</span>(<span class="str">'game.live'</span>);
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">app/Events/TeamUpdate.php</span>
+                            </div>
+                            <pre><code><span class="cm">// Only authenticated team members receive this</span>
+<span class="kw">public function</span> <span class="fn">broadcastOn</span>(): <span class="cls">Channel</span>
+{
+    <span class="kw">return new</span> <span class="cls">PrivateChannel</span>(
+        <span class="str">'team.'</span> . <span class="var">$this</span>-><span class="var">teamId</span>
+    );
+}
+
+<span class="cm">// routes/channels.php — authorization</span>
+<span class="cls">Broadcast</span>::<span class="fn">channel</span>(
+    <span class="str">'team.{teamId}'</span>,
+    <span class="kw">fn</span> (<span class="var">$user</span>, <span class="var">$teamId</span>) =>
+        <span class="var">$user</span>-><span class="fn">belongsToTeam</span>(<span class="var">$teamId</span>)
+);</code></pre>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">resources/js/app.js</span>
+                            </div>
+                            <pre><code><span class="cm">// Every subscriber gets every event</span>
+<span class="var">Echo</span>.<span class="fn">channel</span>(<span class="str">'game.live'</span>)
+    .<span class="fn">listen</span>(<span class="str">'ScoreUpdated'</span>, (<span class="var">e</span>) => {
+        <span class="var">console</span>.<span class="fn">log</span>(
+            <span class="str">`${</span><span class="var">e</span>.<span class="var">team</span><span class="str">} scored! Now: ${</span><span class="var">e</span>.<span class="var">score</span><span class="str">}`</span>
+        );
+    });</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 3. MESH (MANY-TO-MANY) ========== -->
+        <div class="topology-card mesh">
+            <div class="card-header">
+                <div class="card-icon">🕸️</div>
+                <div class="card-header-text">
+                    <h3>N : N — Many-to-Many (Mesh-like)</h3>
+                    <div class="subtitle">Presence channels + client events = logical mesh</div>
+                </div>
+                <span class="support-badge badge-pattern">✓ VIA PATTERN</span>
+            </div>
+            <div class="card-body">
+                <div class="card-description">
+                    <p>The most powerful pattern. Using <strong>presence channels</strong>, every connected user can see who's online AND send <strong>client events</strong> (whisper) that all other members receive — creating a <strong>logical many-to-many mesh</strong>.</p>
+                    <p>Physically, messages still route through Reverb. But logically, any participant can send and all others receive — exactly like a mesh. Think: collaborative editing, group chat, multiplayer games, virtual classrooms.</p>
+                    <div class="insight-box">
+                        <h4>🔥 Client Events (Whisper)</h4>
+                        <p>Client events bypass your Laravel backend entirely. Client A whispers → Reverb relays → Clients B, C, D receive. This is the closest to "true mesh" — no server-side event class needed. Requires presence or private channels.</p>
+                    </div>
+                </div>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 360 320" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="g-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7b2ff7"/>
+                                <stop offset="100%" style="stop-color:#a855f7"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Reverb center (small, de-emphasized) -->
+                        <circle cx="180" cy="160" r="30" fill="#7b2ff7" opacity="0.1" class="glow-pulse"/>
+                        <circle cx="180" cy="160" r="20" fill="#7b2ff7" opacity="0.25"/>
+                        <text x="180" y="164" text-anchor="middle" fill="#a855f7" font-size="9" font-weight="700">Reverb</text>
+
+                        <!-- Nodes in a ring -->
+                        <!-- A: top -->
+                        <circle cx="180" cy="35" r="25" fill="url(#g-purple)"/>
+                        <text x="180" y="39" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">A</text>
+
+                        <!-- B: right -->
+                        <circle cx="310" cy="110" r="25" fill="url(#g-purple)"/>
+                        <text x="310" y="114" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">B</text>
+
+                        <!-- C: bottom-right -->
+                        <circle cx="290" cy="255" r="25" fill="url(#g-purple)"/>
+                        <text x="290" y="259" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">C</text>
+
+                        <!-- D: bottom-left -->
+                        <circle cx="70" cy="255" r="25" fill="url(#g-purple)"/>
+                        <text x="70" y="259" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">D</text>
+
+                        <!-- E: left -->
+                        <circle cx="50" cy="110" r="25" fill="url(#g-purple)"/>
+                        <text x="50" y="114" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">E</text>
+
+                        <!-- Mesh lines (logical connections, going through center) -->
+                        <!-- Each node to Reverb -->
+                        <line x1="180" y1="60" x2="180" y2="140" stroke="#7b2ff7" stroke-width="1" class="animated-line" opacity="0.5"/>
+                        <line x1="288" y1="118" x2="200" y2="155" stroke="#7b2ff7" stroke-width="1" class="animated-line" opacity="0.5"/>
+                        <line x1="272" y1="245" x2="195" y2="175" stroke="#7b2ff7" stroke-width="1" class="animated-line" opacity="0.5"/>
+                        <line x1="88" y1="245" x2="165" y2="175" stroke="#7b2ff7" stroke-width="1" class="animated-line" opacity="0.5"/>
+                        <line x1="72" y1="118" x2="160" y2="155" stroke="#7b2ff7" stroke-width="1" class="animated-line" opacity="0.5"/>
+
+                        <!-- Logical mesh lines (dashed, showing the perceived topology) -->
+                        <line x1="180" y1="60" x2="288" y2="102" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="288" y1="120" x2="272" y2="235" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="268" y1="260" x2="92" y2="260" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="68" y1="238" x2="56" y2="132" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="68" y1="98" x2="165" y2="42" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="195" y1="50" x2="275" y2="240" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="85" y1="242" x2="295" y2="118" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="62" y1="132" x2="278" y2="242" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+                        <line x1="72" y1="100" x2="168" y2="42" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.3"/>
+
+                        <!-- Legend -->
+                        <line x1="20" y1="305" x2="50" y2="305" stroke="#7b2ff7" stroke-width="1.5" class="animated-line"/>
+                        <text x="56" y="308" fill="#8b949e" font-size="9">Physical (via Reverb)</text>
+                        <line x1="180" y1="305" x2="210" y2="305" stroke="#a855f7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.5"/>
+                        <text x="216" y="308" fill="#8b949e" font-size="9">Logical mesh (perceived)</text>
+                    </svg>
+                </div>
+            </div>
+            <div class="code-section">
+                <div class="tab-container" id="tabs-mesh">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('tabs-mesh', 0)">Presence Channel</button>
+                        <button class="tab-btn" onclick="switchTab('tabs-mesh', 1)">Client Events (Whisper)</button>
+                        <button class="tab-btn" onclick="switchTab('tabs-mesh', 2)">Server Broadcast</button>
+                    </div>
+                    <div class="tab-content active">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">resources/js/collab.js</span>
+                            </div>
+                            <pre><code><span class="cm">// Everyone in the room sees each other & communicates</span>
+<span class="var">Echo</span>.<span class="fn">join</span>(<span class="str">'room.42'</span>)
+    .<span class="fn">here</span>((<span class="var">users</span>) => {
+        <span class="cm">// All currently connected users</span>
+        <span class="var">console</span>.<span class="fn">log</span>(<span class="str">'Online:'</span>, <span class="var">users</span>);
+    })
+    .<span class="fn">joining</span>((<span class="var">user</span>) => {
+        <span class="var">console</span>.<span class="fn">log</span>(<span class="var">user</span>.<span class="var">name</span> + <span class="str">' joined'</span>);
+    })
+    .<span class="fn">leaving</span>((<span class="var">user</span>) => {
+        <span class="var">console</span>.<span class="fn">log</span>(<span class="var">user</span>.<span class="var">name</span> + <span class="str">' left'</span>);
+    })
+    .<span class="fn">listen</span>(<span class="str">'NewMessage'</span>, (<span class="var">e</span>) => {
+        <span class="cm">// Server-broadcast events</span>
+        <span class="fn">addMessage</span>(<span class="var">e</span>);
+    });</code></pre>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">resources/js/whisper.js</span>
+                            </div>
+                            <pre><code><span class="cm">// CLIENT → CLIENT via Reverb (no server roundtrip!)</span>
+<span class="cm">// Typing indicator: A whispers, B/C/D/E all hear it</span>
+
+<span class="kw">const</span> <span class="var">channel</span> = <span class="var">Echo</span>.<span class="fn">join</span>(<span class="str">'room.42'</span>);
+
+<span class="cm">// Send a client event (whisper)</span>
+<span class="var">channel</span>.<span class="fn">whisper</span>(<span class="str">'typing'</span>, {
+    <span class="var">user</span>: <span class="str">'Alice'</span>,
+    <span class="var">cursor</span>: { <span class="var">x</span>: <span class="num">150</span>, <span class="var">y</span>: <span class="num">320</span> }
+});
+
+<span class="cm">// ALL other members receive it</span>
+<span class="var">channel</span>.<span class="fn">listenForWhisper</span>(<span class="str">'typing'</span>, (<span class="var">e</span>) => {
+    <span class="fn">showCursor</span>(<span class="var">e</span>.<span class="var">user</span>, <span class="var">e</span>.<span class="var">cursor</span>);
+});
+
+<span class="cm">// Result: TRUE many-to-many communication</span>
+<span class="cm">// Any member can whisper → all others receive</span></code></pre>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="code-block">
+                            <div class="code-block-header">
+                                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+                                <span class="code-filename">app/Events/NewMessage.php</span>
+                            </div>
+                            <pre><code><span class="kw">class</span> <span class="cls">NewMessage</span> <span class="kw">implements</span> <span class="cls">ShouldBroadcast</span>
+{
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">public</span> <span class="cls">string</span> <span class="var">$body</span>,
+        <span class="kw">public</span> <span class="cls">User</span> <span class="var">$sender</span>,
+        <span class="kw">public</span> <span class="cls">int</span> <span class="var">$roomId</span>,
+    ) {}
+
+    <span class="cm">// Presence channel — all room members receive</span>
+    <span class="kw">public function</span> <span class="fn">broadcastOn</span>(): <span class="cls">Channel</span>
+    {
+        <span class="kw">return new</span> <span class="cls">PresenceChannel</span>(
+            <span class="str">'room.'</span> . <span class="var">$this</span>-><span class="var">roomId</span>
+        );
+    }
+}
+
+<span class="cm">// Any user can trigger this from their controller</span>
+<span class="cm">// All OTHER room members receive it = mesh behavior</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ==================== CHANNEL TYPES ==================== -->
+<div class="section">
+    <div class="section-header">
+        <h2>📺 Channel Types That Enable Each Topology</h2>
+        <p>Reverb's three channel types are the building blocks for all three patterns</p>
+    </div>
+
+    <div class="channel-grid">
+        <div class="channel-card" style="border-top: 3px solid #00d2ff;">
+            <h4>
+                <span class="ch-icon" style="background: rgba(0,210,255,0.15); color: #00d2ff;">📢</span>
+                Public Channel
+            </h4>
+            <p>No auth required. Anyone can subscribe. Best for <strong>hub-and-spoke broadcasts</strong>.</p>
+            <p style="margin-top:8px;"><code>Echo.channel('news')</code></p>
+            <p style="margin-top:6px; font-size:0.82rem; color: var(--text-muted);">→ Topology: 1:N broadcast</p>
+        </div>
+
+        <div class="channel-card" style="border-top: 3px solid #e94560;">
+            <h4>
+                <span class="ch-icon" style="background: rgba(233,69,96,0.15); color: #e94560;">🔐</span>
+                Private Channel
+            </h4>
+            <p>Auth required via <code>routes/channels.php</code>. Can scope to one user or a group. Enables <strong>1:1 and 1:N</strong>.</p>
+            <p style="margin-top:8px;"><code>Echo.private('user.5')</code></p>
+            <p style="margin-top:6px; font-size:0.82rem; color: var(--text-muted);">→ Topology: 1:1 or 1:N (gated)</p>
+        </div>
+
+        <div class="channel-card" style="border-top: 3px solid #7b2ff7;">
+            <h4>
+                <span class="ch-icon" style="background: rgba(123,47,247,0.15); color: #7b2ff7;">👥</span>
+                Presence Channel
+            </h4>
+            <p>Auth + member awareness. Tracks who's online. Supports <strong>client events (whisper)</strong>. Enables <strong>N:N mesh</strong>.</p>
+            <p style="margin-top:8px;"><code>Echo.join('room.42')</code></p>
+            <p style="margin-top:6px; font-size:0.82rem; color: var(--text-muted);">→ Topology: N:N mesh-like</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== COMPARISON TABLE ==================== -->
+<div class="section">
+    <div class="section-header">
+        <h2>📊 Topology Comparison Matrix</h2>
+    </div>
+
+    <div class="comparison-table-wrap">
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>1:1 (One-to-One)</th>
+                    <th>1:N (Hub & Spoke)</th>
+                    <th>N:N (Mesh-like)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Channel Type</strong></td>
+                    <td>Private</td>
+                    <td>Public or Private</td>
+                    <td>Presence</td>
+                </tr>
+                <tr>
+                    <td><strong>Native Support</strong></td>
+                    <td><span class="check">✓ Yes</span></td>
+                    <td><span class="check">✓ Yes (default)</span></td>
+                    <td><span class="check">✓ Yes</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Auth Required</strong></td>
+                    <td><span class="check">✓ Yes</span></td>
+                    <td>Optional (public = no)</td>
+                    <td><span class="check">✓ Yes</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Member Awareness</strong></td>
+                    <td><span class="cross">✕ No</span></td>
+                    <td><span class="cross">✕ No</span></td>
+                    <td><span class="check">✓ Yes (.here/.joining/.leaving)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Client Events (Whisper)</strong></td>
+                    <td><span class="partial">~ Private only</span></td>
+                    <td><span class="cross">✕ No</span></td>
+                    <td><span class="check">✓ Yes — key to mesh</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Server Roundtrip Needed</strong></td>
+                    <td>For broadcasts, yes</td>
+                    <td>Yes (server → Reverb → clients)</td>
+                    <td>Whisper: No! Broadcast: Yes</td>
+                </tr>
+                <tr>
+                    <td><strong>Physical Topology</strong></td>
+                    <td>Hub-and-spoke</td>
+                    <td>Hub-and-spoke</td>
+                    <td>Hub-and-spoke</td>
+                </tr>
+                <tr>
+                    <td><strong>Logical Topology</strong></td>
+                    <td>Point-to-point</td>
+                    <td>Broadcast / fan-out</td>
+                    <td>Full mesh</td>
+                </tr>
+                <tr>
+                    <td><strong>Use Cases</strong></td>
+                    <td>DMs, notifications, alerts</td>
+                    <td>Live feeds, dashboards, scores</td>
+                    <td>Chat rooms, collab editing, games</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ==================== HORIZONTAL SCALING ==================== -->
+<div class="section">
+    <div class="section-header">
+        <h2>🔄 Scaling: Multi-Server Reverb</h2>
+        <p>When you scale Reverb horizontally, the topology gets even more interesting</p>
+    </div>
+
+    <div class="arch-diagram">
+        <h3>Horizontal Scaling with Redis Pub/Sub</h3>
+        <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- Redis -->
+            <rect x="325" y="10" rx="12" ry="12" width="150" height="50" fill="#dc382c" opacity="0.2" stroke="#dc382c" stroke-width="1"/>
+            <text x="400" y="35" text-anchor="middle" fill="#dc382c" font-weight="700" font-size="13">Redis Pub/Sub</text>
+            <text x="400" y="50" text-anchor="middle" fill="#8b949e" font-size="9">Cross-server sync</text>
+
+            <!-- Server 1 -->
+            <line x1="350" y1="60" x2="200" y2="110" stroke="#dc382c" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <rect x="120" y="110" rx="12" ry="12" width="160" height="60" fill="#e94560" opacity="0.2" stroke="#e94560" stroke-width="1"/>
+            <text x="200" y="138" text-anchor="middle" fill="#e94560" font-weight="700" font-size="12">Reverb Server 1</text>
+            <text x="200" y="155" text-anchor="middle" fill="#8b949e" font-size="9">WS connections: A, B</text>
+
+            <!-- Server 2 -->
+            <line x1="400" y1="60" x2="400" y2="110" stroke="#dc382c" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <rect x="320" y="110" rx="12" ry="12" width="160" height="60" fill="#00d2ff" opacity="0.2" stroke="#00d2ff" stroke-width="1"/>
+            <text x="400" y="138" text-anchor="middle" fill="#00d2ff" font-weight="700" font-size="12">Reverb Server 2</text>
+            <text x="400" y="155" text-anchor="middle" fill="#8b949e" font-size="9">WS connections: C, D</text>
+
+            <!-- Server 3 -->
+            <line x1="450" y1="60" x2="600" y2="110" stroke="#dc382c" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <rect x="520" y="110" rx="12" ry="12" width="160" height="60" fill="#7b2ff7" opacity="0.2" stroke="#7b2ff7" stroke-width="1"/>
+            <text x="600" y="138" text-anchor="middle" fill="#7b2ff7" font-weight="700" font-size="12">Reverb Server 3</text>
+            <text x="600" y="155" text-anchor="middle" fill="#8b949e" font-size="9">WS connections: E, F</text>
+
+            <!-- Clients -->
+            <g>
+                <line x1="160" y1="170" x2="100" y2="220" stroke="#e94560" stroke-width="1" class="animated-line" opacity="0.6"/>
+                <circle cx="90" cy="235" r="16" fill="#e94560" opacity="0.7"/>
+                <text x="90" y="239" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">A</text>
+
+                <line x1="240" y1="170" x2="300" y2="220" stroke="#e94560" stroke-width="1" class="animated-line" opacity="0.6"/>
+                <circle cx="310" cy="235" r="16" fill="#e94560" opacity="0.7"/>
+                <text x="310" y="239" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">B</text>
+
+                <line x1="360" y1="170" x2="340" y2="220" stroke="#00d2ff" stroke-width="1" class="animated-line" opacity="0.6"/>
+                <circle cx="335" cy="235" r="16" fill="#00d2ff" opacity="0.7"/>
+                <text x="335" y="239" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">C</text>
+
+                <line x1="440" y1="170" x2="460" y2="220" stroke="#00d2ff" stroke-width="1" class="animated-line" opacity="0.6"/>
+                <circle cx="465" cy="235" r="16" fill="#00d2ff" opacity="0.7"/>
+                <text x="465" y="239" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">D</text>
+
+                <line x1="560" y1="170" x2="530" y2="220" stroke="#7b2ff7" stroke-width="1" class="animated-line" opacity="0.6"/>
+                <circle cx="520" cy="235" r="16" fill="#7b2ff7" opacity="0.7"/>
+                <text x="520" y="239" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">E</text>
+
+                <line x1="640" y1="170" x2="670" y2="220" stroke="#7b2ff7" stroke-width="1" class="animated-line" opacity="0.6"/>
+                <circle cx="680" cy="235" r="16" fill="#7b2ff7" opacity="0.7"/>
+                <text x="680" y="239" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">F</text>
+            </g>
+
+            <text x="400" y="285" text-anchor="middle" fill="#8b949e" font-size="11">Events on Server 1 propagate to Servers 2 & 3 via Redis — all clients stay in sync</text>
+        </svg>
+
+        <div class="scale-note" style="text-align: left;">
+            <h4>🔄 Why This Matters for Mesh</h4>
+            <p>When User A (on Server 1) whispers to a presence channel, Reverb uses <strong>Redis pub/sub</strong> to relay that client event to Servers 2 and 3, which then push it to Users C, D, E, and F. The mesh pattern works seamlessly <strong>even across multiple Reverb server instances</strong>.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SUMMARY ==================== -->
+<div class="section">
+    <div class="section-header">
+        <h2>🎯 Final Summary</h2>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-item s1">
+            <div class="emoji">🔒</div>
+            <h4>One-to-One</h4>
+            <p>Private channels scoped to individual users. Server-mediated, not true P2P. Fully supported.</p>
+        </div>
+        <div class="summary-item s2">
+            <div class="emoji">📡</div>
+            <h4>Hub & Spoke</h4>
+            <p>The DEFAULT pattern. Reverb is literally a hub. All broadcast-based apps use this natively.</p>
+        </div>
+        <div class="summary-item s3">
+            <div class="emoji">🕸️</div>
+            <h4>Many-to-Many Mesh</h4>
+            <p>Presence channels + client events (whisper). Logical mesh routed through Reverb. Fully supported.</p>
+        </div>
+    </div>
+
+    <div class="answer-banner" style="margin-top: 40px;">
+        <h2>💡 The Architectural Truth</h2>
+        <div class="answer-text">
+            <p>Reverb's <strong>physical topology is always hub-and-spoke</strong> — it's a centralized WebSocket server (or cluster of servers synced via Redis). Clients never connect directly to each other.</p>
+            <p>But the <strong>logical topology is whatever you design it to be</strong>:</p>
+            <ul style="margin: 12px 0 0 24px; list-style: disc;">
+                <li>Scope a private channel to one user → <strong>logical 1:1</strong></li>
+                <li>Broadcast to a channel with many subscribers → <strong>logical 1:N fan-out</strong></li>
+                <li>Use presence channels with whisper → <strong>logical N:N mesh</strong></li>
+            </ul>
+            <p style="margin-top: 16px;">This is actually an <em>advantage</em> over true P2P/mesh: you get the <strong>simplicity and security of centralized routing</strong> with the <strong>flexibility of any logical pattern</strong>. No NAT traversal, no STUN/TURN, no connection explosion — just channels.</p>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<footer>
+    <p>Laravel Reverb WebSocket Topologies — Built with 🔌 and ☕</p>
+    <p style="margin-top: 8px;">References: <a href="https://laravel.com/docs/reverb" style="color: var(--accent-4); text-decoration: none;">Laravel Reverb Docs</a> · <a href="https://laravel.com/docs/broadcasting" style="color: var(--accent-4); text-decoration: none;">Laravel Broadcasting Docs</a></p>
+</footer>
+
+<script>
+function switchTab(containerId, index) {
+    const container = document.getElementById(containerId);
+    const buttons = container.querySelectorAll('.tab-btn');
+    const contents = container.querySelectorAll('.tab-content');
+
+    buttons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+    });
+
+    contents.forEach((content, i) => {
+        content.classList.toggle('active', i === index);
+    });
+}
+</script>
+
+</body>
+</html>

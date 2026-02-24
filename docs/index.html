@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>markweb docs</title>
+    <meta name="description" content="markweb — Unified Laravel 12 + Inertia 2 + React 19 platform documentation">
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="site.css">
+    <script>(function(){var s=JSON.parse(localStorage.getItem('markweb-docs-state')||'{}'),t=s.theme,c=s.scheme,h=document.documentElement;h.className='preload '+(t||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))+(c&&c!=='crimson'?' scheme-'+c:'');})()</script>
+</head>
+<body>
+
+<!-- Glass hamburger toggles -->
+<button class="menu-toggle menu-toggle-left" data-sidebar="left" aria-label="Toggle navigation">&#9776;</button>
+<button class="menu-toggle menu-toggle-right" data-sidebar="right" aria-label="Toggle settings">&#9881;</button>
+
+<!-- TopNav -->
+<nav class="topnav">
+    <h1><a class="brand" href="#">markweb</a></h1>
+</nav>
+
+<!-- Left Sidebar: 2-panel carousel -->
+<aside class="sidebar sidebar-left">
+    <div class="carousel-header">
+        <div class="carousel-nav">
+            <button class="carousel-chevron" data-dir="prev" aria-label="Previous panel">&#8249;</button>
+            <div class="carousel-dots">
+                <button class="carousel-dot active" data-index="0" aria-label="Documentation"></button>
+                <button class="carousel-dot" data-index="1" aria-label="Explainers"></button>
+            </div>
+            <button class="carousel-chevron" data-dir="next" aria-label="Next panel">&#8250;</button>
+        </div>
+        <button class="pin-toggle" data-sidebar="left" title="Pin sidebar">&#128204;</button>
+    </div>
+    <div class="carousel-viewport">
+        <div class="carousel-track">
+            <!-- L1: Documentation Nav -->
+            <div class="carousel-panel">
+                <nav>
+                    <a href="#README.md" data-path="README.md">&#127968; Overview</a>
+                </nav>
+                <div class="sidebar-group">
+                    <div class="sidebar-group-title">&#127959; Architecture</div>
+                    <nav><div>
+                        <a href="#architecture.md" data-path="architecture.md">&#9881; Backend Services</a>
+                        <a href="#frontend.md" data-path="frontend.md">&#127912; Frontend & DCS</a>
+                    </div></nav>
+                </div>
+                <div class="sidebar-group">
+                    <div class="sidebar-group-title">&#9889; Features</div>
+                    <nav><div>
+                        <a href="#agent.md" data-path="agent.md">&#129302; AI Agent</a>
+                        <a href="#mail.md" data-path="mail.md">&#9993; JMAP Mail</a>
+                        <a href="#dav.md" data-path="dav.md">&#128197; CalDAV/CardDAV</a>
+                    </div></nav>
+                </div>
+                <div class="sidebar-group">
+                    <div class="sidebar-group-title">&#128640; Operations</div>
+                    <nav><div>
+                        <a href="#deploy.md" data-path="deploy.md">&#128230; Deploy</a>
+                    </div></nav>
+                </div>
+            </div>
+
+            <!-- L2: Explainers -->
+            <div class="carousel-panel">
+                <nav>
+                    <a href="markweb-collaborative-design.html" target="_blank" rel="noopener">&#127912; Collaborative Design</a>
+                    <a href="websocket-wireguard-markweb.html" target="_blank" rel="noopener">&#128274; WebSocket over WireGuard</a>
+                    <a href="websocket-topologies.html" target="_blank" rel="noopener">&#128375; WebSocket Topologies</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Right Sidebar: 1-panel (Theme) -->
+<aside class="sidebar sidebar-right">
+    <div class="carousel-header">
+        <div class="carousel-nav">
+            <div class="carousel-dots">
+                <button class="carousel-dot active" data-index="0" aria-label="Theme"></button>
+            </div>
+        </div>
+        <button class="pin-toggle" data-sidebar="right" title="Pin sidebar">&#128204;</button>
+    </div>
+    <div class="carousel-viewport">
+        <div class="carousel-track">
+            <!-- R1: Theme -->
+            <div class="carousel-panel">
+                <nav>
+                    <button class="scheme-btn" data-scheme="crimson">
+                        <span class="scheme-swatch" style="background: oklch(50.5% 0.197 30);"></span> Crimson
+                    </button>
+                    <button class="scheme-btn" data-scheme="stone">
+                        <span class="scheme-swatch" style="background: oklch(45% 0.05 60);"></span> Stone
+                    </button>
+                    <button class="scheme-btn" data-scheme="ocean">
+                        <span class="scheme-swatch" style="background: oklch(50% 0.15 220);"></span> Ocean
+                    </button>
+                    <button class="scheme-btn" data-scheme="forest">
+                        <span class="scheme-swatch" style="background: oklch(50% 0.12 150);"></span> Forest
+                    </button>
+                    <button class="scheme-btn" data-scheme="sunset">
+                        <span class="scheme-swatch" style="background: oklch(60% 0.16 45);"></span> Sunset
+                    </button>
+                    <div class="sidebar-divider"></div>
+                    <a href="#" class="theme-toggle" id="theme-icon" onclick="Base.toggleTheme();return false">&#127769;</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main id="content" class="prose page-fade-in">
+    <h1>markweb</h1>
+    <p>Loading documentation...</p>
+</main>
+
+<!-- Overlay -->
+<div class="overlay"></div>
+
+<script src="base.js"></script>
+<script src="md.js"></script>
+</body>
+</html>
