@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laravel Reverb WebSocket Topologies — Complete Architecture Guide</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   CSS RESET & VARIABLES
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --red: #FF2D20;
+  --red-dark: #CC1F14;
+  --red-glow: rgba(255,45,32,0.3);
+  --bg: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a25;
+  --surface: #1e1e2a;
+  --border: #2a2a3a;
+  --text: #e4e4e7;
+  --text-dim: #9898a8;
+  --text-bright: #ffffff;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --amber: #f59e0b;
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+  --code-bg: #0d0d14;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATED BACKGROUND
+   ═══════════════════════════════════════════════════════ */
+.bg-grid {
+  position: fixed; inset:0; z-index:0;
+  background-image:
+    linear-gradient(rgba(255,45,32,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,45,32,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.bg-orb {
+  position: fixed; border-radius:50%; filter:blur(100px);
+  pointer-events:none; z-index:0;
+  animation: orbFloat 20s ease-in-out infinite;
+}
+.bg-orb-1 { width:500px; height:500px; top:-10%; left:-10%; background:rgba(255,45,32,0.08); }
+.bg-orb-2 { width:400px; height:400px; bottom:-10%; right:-10%; background:rgba(59,130,246,0.06); animation-delay:-10s; }
+.bg-orb-3 { width:300px; height:300px; top:40%; right:20%; background:rgba(168,85,247,0.05); animation-delay:-5s; }
+@keyframes orbFloat {
+  0%,100% { transform:translate(0,0) scale(1); }
+  33% { transform:translate(30px,-40px) scale(1.1); }
+  66% { transform:translate(-20px,30px) scale(0.95); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════════════════ */
+.container { max-width:1200px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+
+/* ═══════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════ */
+.hero {
+  min-height: 70vh;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center; padding:80px 24px;
+}
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background: rgba(255,45,32,0.1); border:1px solid rgba(255,45,32,0.3);
+  padding:6px 16px; border-radius:50px; font-size:0.85rem;
+  color:var(--red); margin-bottom:24px;
+  animation: fadeInDown 0.8s ease;
+}
+.hero-badge .dot { width:8px; height:8px; border-radius:50%; background:var(--red); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+.hero h1 {
+  font-size: clamp(2.5rem,6vw,4.5rem);
+  font-weight:800; line-height:1.1;
+  color:var(--text-bright);
+  margin-bottom:20px;
+  animation: fadeInUp 1s ease;
+}
+.hero h1 .accent { color:var(--red); }
+.hero .subtitle {
+  font-size: clamp(1rem,2vw,1.3rem);
+  color:var(--text-dim); max-width:700px;
+  animation: fadeInUp 1s ease 0.2s both;
+}
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeInDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+
+/* Quick Answer Box */
+.quick-answer {
+  margin-top:48px; padding:32px;
+  background: linear-gradient(135deg, rgba(255,45,32,0.08), rgba(59,130,246,0.05));
+  border:1px solid rgba(255,45,32,0.2);
+  border-radius:16px; max-width:800px; text-align:left;
+  animation: fadeInUp 1s ease 0.4s both;
+}
+.quick-answer h3 { color:var(--red); font-size:1.1rem; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.quick-answer p { color:var(--text); font-size:0.95rem; }
+.quick-answer strong { color:var(--text-bright); }
+
+/* ═══════════════════════════════════════════════════════
+   SECTION HEADERS
+   ═══════════════════════════════════════════════════════ */
+section { padding:80px 0; }
+.section-label {
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:0.8rem; text-transform:uppercase; letter-spacing:2px;
+  color:var(--red); font-weight:600; margin-bottom:12px;
+}
+.section-label::before { content:''; width:24px; height:2px; background:var(--red); }
+.section-title {
+  font-size: clamp(1.8rem,4vw,2.8rem);
+  font-weight:800; color:var(--text-bright); margin-bottom:16px;
+}
+.section-desc { color:var(--text-dim); font-size:1.05rem; max-width:700px; margin-bottom:48px; }
+
+/* ═══════════════════════════════════════════════════════
+   ARCHITECTURE DIAGRAM
+   ═══════════════════════════════════════════════════════ */
+.arch-diagram {
+  background: var(--bg-card); border:1px solid var(--border);
+  border-radius:20px; padding:40px; overflow:hidden; margin-bottom:48px;
+  position:relative;
+}
+.arch-diagram svg { width:100%; height:auto; }
+.arch-diagram .diagram-title {
+  font-size:1.1rem; font-weight:700; color:var(--text-bright);
+  margin-bottom:24px; text-align:center;
+}
+
+/* SVG Animation classes */
+.anim-dash { stroke-dasharray:8,6; animation: dashMove 1.5s linear infinite; }
+@keyframes dashMove { to{stroke-dashoffset:-28;} }
+.anim-dash-reverse { stroke-dasharray:8,6; animation: dashMoveReverse 1.5s linear infinite; }
+@keyframes dashMoveReverse { to{stroke-dashoffset:28;} }
+.anim-pulse-node { animation: nodePulse 3s ease-in-out infinite; }
+@keyframes nodePulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+/* ═══════════════════════════════════════════════════════
+   TOPOLOGY CARDS
+   ═══════════════════════════════════════════════════════ */
+.topo-grid { display:grid; grid-template-columns:1fr; gap:32px; }
+
+.topo-card {
+  background: var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+  transition: all 0.3s ease;
+}
+.topo-card:hover {
+  border-color: rgba(255,45,32,0.3);
+  box-shadow: 0 0 40px rgba(255,45,32,0.05);
+  transform: translateY(-2px);
+}
+.topo-card-header {
+  display:grid; grid-template-columns:1fr 1fr; gap:0;
+  border-bottom:1px solid var(--border);
+}
+@media(max-width:768px) { .topo-card-header { grid-template-columns:1fr; } }
+.topo-info { padding:32px; }
+.topo-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 12px; border-radius:50px;
+  font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  margin-bottom:12px;
+}
+.topo-badge.one-to-one { background:rgba(34,197,94,0.1); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+.topo-badge.hub-spoke { background:rgba(59,130,246,0.1); color:var(--blue); border:1px solid rgba(59,130,246,0.3); }
+.topo-badge.mesh { background:rgba(168,85,247,0.1); color:var(--purple); border:1px solid rgba(168,85,247,0.3); }
+.topo-name { font-size:1.6rem; font-weight:800; color:var(--text-bright); margin-bottom:8px; }
+.topo-subtitle { color:var(--text-dim); font-size:0.95rem; margin-bottom:16px; }
+.topo-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.topo-tag {
+  padding:3px 10px; border-radius:6px;
+  font-size:0.75rem; font-weight:500;
+  background:var(--surface); color:var(--text-dim); border:1px solid var(--border);
+}
+
+.topo-visual {
+  display:flex; align-items:center; justify-content:center;
+  padding:24px; background:rgba(0,0,0,0.2);
+  min-height:220px;
+}
+.topo-visual svg { width:100%; max-width:280px; height:auto; }
+
+/* Card Body */
+.topo-body { padding:32px; }
+
+/* Tabs */
+.tabs { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; }
+.tab-btn {
+  padding:8px 16px; border-radius:8px;
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text-dim); font-size:0.8rem; font-weight:600;
+  cursor:pointer; transition:all 0.2s;
+  font-family:var(--font-sans);
+}
+.tab-btn:hover { border-color:var(--red); color:var(--text); }
+.tab-btn.active { background:rgba(255,45,32,0.1); border-color:var(--red); color:var(--red); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* Code blocks */
+pre {
+  background:var(--code-bg); border:1px solid var(--border);
+  border-radius:12px; padding:20px; overflow-x:auto;
+  font-family:var(--font-mono); font-size:0.82rem;
+  line-height:1.7; color:#c9d1d9;
+}
+.code-label {
+  display:inline-block; font-size:0.7rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:1px;
+  color:var(--text-dim); margin-bottom:8px;
+  font-family:var(--font-mono);
+}
+code .kw { color:#ff7b72; }
+code .fn { color:#d2a8ff; }
+code .str { color:#a5d6ff; }
+code .cm { color:#8b949e; font-style:italic; }
+code .var { color:#ffa657; }
+code .num { color:#79c0ff; }
+code .cls { color:#7ee787; }
+
+/* Insight boxes */
+.insight {
+  margin-top:20px; padding:16px 20px;
+  border-radius:12px; border-left:3px solid;
+  font-size:0.9rem;
+}
+.insight.tip { background:rgba(34,197,94,0.06); border-color:var(--green); }
+.insight.warn { background:rgba(245,158,11,0.06); border-color:var(--amber); }
+.insight.info { background:rgba(59,130,246,0.06); border-color:var(--blue); }
+.insight.magic { background:rgba(168,85,247,0.06); border-color:var(--purple); }
+.insight strong { color:var(--text-bright); }
+.insight-title { font-weight:700; margin-bottom:4px; }
+.insight.tip .insight-title { color:var(--green); }
+.insight.warn .insight-title { color:var(--amber); }
+.insight.info .insight-title { color:var(--blue); }
+.insight.magic .insight-title { color:var(--purple); }
+
+/* ═══════════════════════════════════════════════════════
+   CHANNEL TYPES TABLE
+   ═══════════════════════════════════════════════════════ */
+.channel-grid {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr));
+  gap:20px; margin-bottom:40px;
+}
+.channel-card {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:16px; padding:28px;
+  transition:all 0.3s;
+}
+.channel-card:hover { border-color:rgba(255,45,32,0.3); transform:translateY(-2px); }
+.channel-icon { font-size:2rem; margin-bottom:12px; }
+.channel-name { font-size:1.1rem; font-weight:700; color:var(--text-bright); margin-bottom:4px; }
+.channel-syntax { font-family:var(--font-mono); font-size:0.8rem; color:var(--red); margin-bottom:12px; }
+.channel-desc { font-size:0.88rem; color:var(--text-dim); margin-bottom:12px; }
+.channel-features { list-style:none; }
+.channel-features li { font-size:0.85rem; color:var(--text); padding:3px 0; }
+.channel-features li::before { content:"✓ "; color:var(--green); font-weight:700; }
+
+/* ═══════════════════════════════════════════════════════
+   COMPARISON TABLE
+   ═══════════════════════════════════════════════════════ */
+.comparison-wrapper {
+  overflow-x:auto; border-radius:16px;
+  border:1px solid var(--border);
+  background:var(--bg-card);
+}
+table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+thead th {
+  background:var(--surface); padding:16px 20px;
+  text-align:left; font-weight:700; color:var(--text-bright);
+  border-bottom:2px solid var(--border);
+  white-space:nowrap;
+}
+tbody td {
+  padding:14px 20px; border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:rgba(255,45,32,0.02); }
+td .check { color:var(--green); font-weight:700; }
+td .cross { color:#ef4444; }
+td .partial { color:var(--amber); }
+.row-label { font-weight:600; color:var(--text-bright); }
+
+/* ═══════════════════════════════════════════════════════
+   SCALING SECTION
+   ═══════════════════════════════════════════════════════ */
+.scale-diagram {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:20px; padding:40px; text-align:center;
+}
+.scale-diagram svg { width:100%; max-width:900px; height:auto; margin:0 auto; display:block; }
+
+/* ═══════════════════════════════════════════════════════
+   SUMMARY
+   ═══════════════════════════════════════════════════════ */
+.summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+.summary-item {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:16px; padding:28px; text-align:center;
+  transition:all 0.3s;
+}
+.summary-item:hover { border-color:var(--red); transform:translateY(-2px); }
+.summary-icon { font-size:2.5rem; margin-bottom:12px; }
+.summary-label { font-weight:800; font-size:1.1rem; color:var(--text-bright); margin-bottom:4px; }
+.summary-value { font-size:0.9rem; color:var(--text-dim); }
+
+/* ═══════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════ */
+footer {
+  padding:40px 24px; text-align:center;
+  border-top:1px solid var(--border);
+  color:var(--text-dim); font-size:0.85rem;
+}
+footer a { color:var(--red); text-decoration:none; }
+footer a:hover { text-decoration:underline; }
+
+/* ═══════════════════════════════════════════════════════
+   TRUTH BOX
+   ═══════════════════════════════════════════════════════ */
+.truth-box {
+  background: linear-gradient(135deg, rgba(255,45,32,0.1), rgba(168,85,247,0.08));
+  border:2px solid rgba(255,45,32,0.3);
+  border-radius:20px; padding:48px; margin:48px 0;
+  text-align:center;
+}
+.truth-box h3 { font-size:1.5rem; font-weight:800; color:var(--text-bright); margin-bottom:16px; }
+.truth-box p { color:var(--text); max-width:700px; margin:0 auto 12px; font-size:1rem; }
+
+/* Scroll animations */
+.reveal { opacity:0; transform:translateY(30px); transition:all 0.8s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* Responsive */
+@media(max-width:640px) {
+  .hero { padding:60px 16px; min-height:auto; }
+  .quick-answer { padding:20px; }
+  section { padding:40px 0; }
+  pre { font-size:0.72rem; padding:14px; }
+  .topo-info { padding:20px; }
+  .topo-body { padding:20px; }
+  .truth-box { padding:28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-grid"></div>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO SECTION
+     ═══════════════════════════════════════════════════════ -->
+<header class="hero">
+  <div class="hero-badge"><span class="dot"></span> Laravel Reverb Architecture Deep-Dive</div>
+  <h1>WebSocket <span class="accent">Topologies</span><br>in Laravel Reverb</h1>
+  <p class="subtitle">
+    Is Reverb strictly one-to-one peer-to-peer? Hub-and-spoke? Or can it do full mesh many-to-many?
+    <strong style="color:var(--text-bright)">The answer: all three — and here's exactly how.</strong>
+  </p>
+
+  <div class="quick-answer">
+    <h3>⚡ The Short Answer</h3>
+    <p>
+      <strong>No, Laravel Reverb is NOT limited to one-to-one.</strong> Physically, it always uses a
+      <strong>hub-and-spoke</strong> topology (all clients connect to the Reverb server). But <em>logically</em>,
+      through Laravel's channel system, it supports <strong>1:1</strong> (private user channels),
+      <strong>1:N hub-and-spoke</strong> (broadcast to subscribers — the default), and
+      <strong>N:N mesh-like</strong> (presence channels + client events/whisper).
+      With horizontal scaling via <strong>Redis pub/sub</strong>, the mesh works across multiple server instances.
+    </p>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════════════
+     PHYSICAL ARCHITECTURE
+     ═══════════════════════════════════════════════════════ -->
+<section id="architecture" class="reveal">
+  <div class="section-label">Physical Architecture</div>
+  <h2 class="section-title">How Reverb Actually Works</h2>
+  <p class="section-desc">
+    Every WebSocket connection terminates at the Reverb server. Clients <em>never</em> connect directly to each other.
+    This is fundamentally different from WebRTC-style true P2P. Reverb implements the Pusher protocol on a ReactPHP event loop.
+  </p>
+
+  <div class="arch-diagram">
+    <div class="diagram-title">Physical Connection Topology — Always Hub &amp; Spoke</div>
+    <svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background boxes -->
+      <rect x="20" y="20" width="200" height="360" rx="16" fill="#1a1a25" stroke="#2a2a3a"/>
+      <text x="120" y="55" text-anchor="middle" fill="#9898a8" font-size="11" font-weight="700" letter-spacing="1">LARAVEL APP</text>
+
+      <rect x="300" y="80" width="300" height="240" rx="16" fill="rgba(255,45,32,0.05)" stroke="rgba(255,45,32,0.3)"/>
+      <text x="450" y="115" text-anchor="middle" fill="#FF2D20" font-size="12" font-weight="800" letter-spacing="1">REVERB SERVER</text>
+
+      <rect x="700" y="20" width="180" height="360" rx="16" fill="#1a1a25" stroke="#2a2a3a"/>
+      <text x="790" y="55" text-anchor="middle" fill="#9898a8" font-size="11" font-weight="700" letter-spacing="1">CLIENTS</text>
+
+      <!-- Laravel components -->
+      <rect x="45" y="80" width="150" height="40" rx="8" fill="#1e1e2a" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="120" y="105" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="600">Event Classes</text>
+
+      <rect x="45" y="140" width="150" height="40" rx="8" fill="#1e1e2a" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="120" y="165" text-anchor="middle" fill="#a855f7" font-size="11" font-weight="600">Channel Auth</text>
+
+      <rect x="45" y="200" width="150" height="40" rx="8" fill="#1e1e2a" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="120" y="225" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="600">Queue Workers</text>
+
+      <rect x="45" y="260" width="150" height="40" rx="8" fill="#1e1e2a" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="120" y="285" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="600">Broadcasting</text>
+
+      <!-- Reverb internals -->
+      <rect x="330" y="140" width="110" height="35" rx="6" fill="#1e1e2a" stroke="#FF2D20" stroke-width="1.5"/>
+      <text x="385" y="162" text-anchor="middle" fill="#FF2D20" font-size="10" font-weight="600">ReactPHP Loop</text>
+
+      <rect x="460" y="140" width="110" height="35" rx="6" fill="#1e1e2a" stroke="#FF2D20" stroke-width="1.5"/>
+      <text x="515" y="162" text-anchor="middle" fill="#FF2D20" font-size="10" font-weight="600">Pusher Protocol</text>
+
+      <rect x="330" y="195" width="110" height="35" rx="6" fill="#1e1e2a" stroke="#ec4899" stroke-width="1.5"/>
+      <text x="385" y="217" text-anchor="middle" fill="#ec4899" font-size="10" font-weight="600">Channel Mgr</text>
+
+      <rect x="460" y="195" width="110" height="35" rx="6" fill="#1e1e2a" stroke="#06b6d4" stroke-width="1.5"/>
+      <text x="515" y="217" text-anchor="middle" fill="#06b6d4" font-size="10" font-weight="600">Conn. Pool</text>
+
+      <rect x="380" y="255" width="140" height="35" rx="6" fill="#1e1e2a" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="450" y="277" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="600">Redis Pub/Sub (Scale)</text>
+
+      <!-- Client nodes -->
+      <circle cx="790" cy="100" r="22" fill="#1e1e2a" stroke="#22c55e" stroke-width="2" class="anim-pulse-node"/>
+      <text x="790" y="105" text-anchor="middle" fill="#22c55e" font-size="18">🖥</text>
+      <text x="790" y="138" text-anchor="middle" fill="#9898a8" font-size="9">Browser A</text>
+
+      <circle cx="790" cy="200" r="22" fill="#1e1e2a" stroke="#3b82f6" stroke-width="2" class="anim-pulse-node"/>
+      <text x="790" y="205" text-anchor="middle" fill="#3b82f6" font-size="18">📱</text>
+      <text x="790" y="238" text-anchor="middle" fill="#9898a8" font-size="9">Mobile B</text>
+
+      <circle cx="790" cy="300" r="22" fill="#1e1e2a" stroke="#a855f7" stroke-width="2" class="anim-pulse-node"/>
+      <text x="790" y="305" text-anchor="middle" fill="#a855f7" font-size="18">💻</text>
+      <text x="790" y="338" text-anchor="middle" fill="#9898a8" font-size="9">Desktop C</text>
+
+      <!-- Connection arrows: Laravel → Reverb -->
+      <line x1="195" y1="200" x2="300" y2="200" stroke="#f59e0b" stroke-width="2" class="anim-dash"/>
+      <polygon points="296,196 304,200 296,204" fill="#f59e0b"/>
+      <text x="248" y="190" text-anchor="middle" fill="#f59e0b" font-size="8">HTTP/Internal</text>
+
+      <!-- Connection arrows: Reverb ↔ Clients -->
+      <line x1="600" y1="170" x2="768" y2="100" stroke="#22c55e" stroke-width="2" class="anim-dash"/>
+      <text x="670" y="118" fill="#22c55e" font-size="8" transform="rotate(-12 670 118)">ws://</text>
+
+      <line x1="600" y1="200" x2="768" y2="200" stroke="#3b82f6" stroke-width="2" class="anim-dash"/>
+      <text x="680" y="193" fill="#3b82f6" font-size="8">ws://</text>
+
+      <line x1="600" y1="230" x2="768" y2="300" stroke="#a855f7" stroke-width="2" class="anim-dash"/>
+      <text x="670" y="282" fill="#a855f7" font-size="8" transform="rotate(12 670 282)">ws://</text>
+    </svg>
+  </div>
+
+  <div class="insight info">
+    <div class="insight-title">ℹ️ Key Architectural Truth</div>
+    <strong>Physical topology is always hub-and-spoke.</strong> The Reverb server is the central hub.
+    Every client maintains a persistent WebSocket connection to it. What varies is the <em>logical</em>
+    message flow pattern — which topology the messages follow — controlled entirely by your choice of channels and events.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     THREE TOPOLOGIES
+     ═══════════════════════════════════════════════════════ -->
+<section id="topologies" class="reveal">
+  <div class="section-label">Logical Topologies</div>
+  <h2 class="section-title">Three Patterns, One Server</h2>
+  <p class="section-desc">
+    Through channel types and event routing, Reverb supports all three communication patterns.
+    Each uses a different combination of channel types, authorization, and event flow.
+  </p>
+
+  <div class="topo-grid">
+
+    <!-- ════════════ 1:1 ONE-TO-ONE ════════════ -->
+    <div class="topo-card">
+      <div class="topo-card-header">
+        <div class="topo-info">
+          <div class="topo-badge one-to-one">● One-to-One</div>
+          <div class="topo-name">🔒 Private Point-to-Point</div>
+          <div class="topo-subtitle">
+            Targeted delivery to a single specific user. Messages go Server → Reverb → One Client.
+            Nobody else on the channel sees the event.
+          </div>
+          <div class="topo-tags">
+            <span class="topo-tag">PrivateChannel</span>
+            <span class="topo-tag">User-scoped</span>
+            <span class="topo-tag">Notifications</span>
+            <span class="topo-tag">DMs</span>
+          </div>
+        </div>
+        <div class="topo-visual">
+          <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- Server node -->
+            <rect x="100" y="70" width="80" height="60" rx="12" fill="rgba(255,45,32,0.1)" stroke="#FF2D20" stroke-width="2"/>
+            <text x="140" y="95" text-anchor="middle" fill="#FF2D20" font-size="20">⚙️</text>
+            <text x="140" y="120" text-anchor="middle" fill="#FF2D20" font-size="9" font-weight="700">REVERB</text>
+            <!-- Single client -->
+            <circle cx="240" cy="100" r="24" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="2"/>
+            <text x="240" y="105" text-anchor="middle" fill="#22c55e" font-size="18">👤</text>
+            <!-- Laravel -->
+            <circle cx="40" cy="100" r="24" fill="rgba(255,45,32,0.1)" stroke="#FF2D20" stroke-width="2"/>
+            <text x="40" y="106" text-anchor="middle" fill="#FF2D20" font-size="14" font-weight="800">L</text>
+            <!-- Arrows -->
+            <line x1="64" y1="100" x2="98" y2="100" stroke="#f59e0b" stroke-width="2" class="anim-dash"/>
+            <line x1="180" y1="100" x2="216" y2="100" stroke="#22c55e" stroke-width="2" class="anim-dash"/>
+            <!-- Dimmed other client -->
+            <circle cx="240" cy="40" r="16" fill="none" stroke="#2a2a3a" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="240" y="45" text-anchor="middle" fill="#2a2a3a" font-size="12">👤</text>
+            <circle cx="240" cy="160" r="16" fill="none" stroke="#2a2a3a" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="240" y="165" text-anchor="middle" fill="#2a2a3a" font-size="12">👤</text>
+            <!-- X marks -->
+            <text x="222" y="48" fill="#ef4444" font-size="11" font-weight="700">✗</text>
+            <text x="222" y="168" fill="#ef4444" font-size="11" font-weight="700">✗</text>
+          </svg>
+        </div>
+      </div>
+      <div class="topo-body">
+        <div class="tabs" data-tabgroup="onetoone">
+          <button class="tab-btn active" data-tab="oto-event">Event Class</button>
+          <button class="tab-btn" data-tab="oto-channel">Channel Auth</button>
+          <button class="tab-btn" data-tab="oto-dispatch">Dispatch</button>
+          <button class="tab-btn" data-tab="oto-listen">Echo Listener</button>
+        </div>
+        <div class="tab-panel active" id="oto-event">
+          <div class="code-label">app/Events/DirectMessage.php</div>
+<pre><code><span class="kw">class</span> <span class="cls">DirectMessage</span> <span class="kw">implements</span> <span class="cls">ShouldBroadcast</span>
+{
+    <span class="kw">use</span> <span class="cls">Dispatchable</span>, <span class="cls">InteractsWithSockets</span>, <span class="cls">SerializesModels</span>;
+
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">public</span> <span class="cls">User</span> <span class="var">$sender</span>,
+        <span class="kw">public</span> <span class="cls">string</span> <span class="var">$message</span>,
+        <span class="kw">public</span> <span class="cls">User</span> <span class="var">$recipient</span>,
+    ) {}
+
+    <span class="cm">// Only the recipient's private channel receives this</span>
+    <span class="kw">public function</span> <span class="fn">broadcastOn</span>(): <span class="cls">Channel</span>
+    {
+        <span class="kw">return new</span> <span class="cls">PrivateChannel</span>(<span class="str">'user.'</span>.<span class="var">$this</span>-><span class="var">recipient</span>-><span class="var">id</span>);
+    }
+}</code></pre>
+        </div>
+        <div class="tab-panel" id="oto-channel">
+          <div class="code-label">routes/channels.php</div>
+<pre><code><span class="cm">// Only the authenticated user matching the ID can join</span>
+<span class="cls">Broadcast</span>::<span class="fn">channel</span>(<span class="str">'user.{id}'</span>, <span class="kw">function</span> (<span class="cls">User</span> <span class="var">$user</span>, <span class="cls">int</span> <span class="var">$id</span>) {
+    <span class="kw">return</span> (<span class="kw">int</span>) <span class="var">$user</span>-><span class="var">id</span> === (<span class="kw">int</span>) <span class="var">$id</span>;
+});</code></pre>
+        </div>
+        <div class="tab-panel" id="oto-dispatch">
+          <div class="code-label">Dispatching from anywhere in your app</div>
+<pre><code><span class="cm">// Send a DM — only User #42 will receive it</span>
+<span class="fn">broadcast</span>(<span class="kw">new</span> <span class="cls">DirectMessage</span>(
+    <span class="var">sender</span>: <span class="var">$currentUser</span>,
+    <span class="var">message</span>: <span class="str">'Hey, are you coming to the meeting?'</span>,
+    <span class="var">recipient</span>: <span class="cls">User</span>::<span class="fn">find</span>(<span class="num">42</span>),
+));</code></pre>
+        </div>
+        <div class="tab-panel" id="oto-listen">
+          <div class="code-label">JavaScript — Laravel Echo</div>
+<pre><code><span class="cm">// Each user subscribes to their own private channel</span>
+<span class="cls">Echo</span>.<span class="fn">private</span>(<span class="str">`user.${userId}`</span>)
+    .<span class="fn">listen</span>(<span class="str">'DirectMessage'</span>, (<span class="var">e</span>) => {
+        <span class="fn">showNotification</span>(
+            <span class="str">`Message from ${</span><span class="var">e</span>.<span class="var">sender</span>.<span class="var">name</span><span class="str">}: ${</span><span class="var">e</span>.<span class="var">message</span><span class="str">}`</span>
+        );
+    });</code></pre>
+        </div>
+
+        <div class="insight tip">
+          <div class="insight-title">✅ When to use 1:1</div>
+          Direct messages, personal notifications, user-specific alerts, payment confirmations,
+          password reset completions — anywhere only <strong>one specific user</strong> should see the event.
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ 1:N HUB & SPOKE ════════════ -->
+    <div class="topo-card">
+      <div class="topo-card-header">
+        <div class="topo-info">
+          <div class="topo-badge hub-spoke">● Hub &amp; Spoke (Default)</div>
+          <div class="topo-name">📡 One-to-Many Broadcast</div>
+          <div class="topo-subtitle">
+            The default pattern. Server broadcasts events to all subscribers on a channel.
+            This is what Laravel's broadcasting was fundamentally designed for.
+          </div>
+          <div class="topo-tags">
+            <span class="topo-tag">Channel</span>
+            <span class="topo-tag">PrivateChannel</span>
+            <span class="topo-tag">Server → All</span>
+            <span class="topo-tag">ShouldBroadcast</span>
+          </div>
+        </div>
+        <div class="topo-visual">
+          <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- Reverb hub -->
+            <rect x="100" y="70" width="80" height="60" rx="12" fill="rgba(255,45,32,0.1)" stroke="#FF2D20" stroke-width="2"/>
+            <text x="140" y="95" text-anchor="middle" fill="#FF2D20" font-size="20">⚙️</text>
+            <text x="140" y="120" text-anchor="middle" fill="#FF2D20" font-size="9" font-weight="700">REVERB</text>
+            <!-- Laravel source -->
+            <circle cx="40" cy="100" r="24" fill="rgba(255,45,32,0.1)" stroke="#FF2D20" stroke-width="2"/>
+            <text x="40" y="106" text-anchor="middle" fill="#FF2D20" font-size="14" font-weight="800">L</text>
+            <line x1="64" y1="100" x2="98" y2="100" stroke="#f59e0b" stroke-width="2" class="anim-dash"/>
+            <!-- Multiple clients -->
+            <circle cx="240" cy="40" r="20" fill="rgba(59,130,246,0.1)" stroke="#3b82f6" stroke-width="2"/>
+            <text x="240" y="45" text-anchor="middle" fill="#3b82f6" font-size="14">👤</text>
+            <circle cx="240" cy="100" r="20" fill="rgba(59,130,246,0.1)" stroke="#3b82f6" stroke-width="2"/>
+            <text x="240" y="105" text-anchor="middle" fill="#3b82f6" font-size="14">👤</text>
+            <circle cx="240" cy="160" r="20" fill="rgba(59,130,246,0.1)" stroke="#3b82f6" stroke-width="2"/>
+            <text x="240" y="165" text-anchor="middle" fill="#3b82f6" font-size="14">👤</text>
+            <!-- Fan-out arrows -->
+            <line x1="180" y1="85" x2="220" y2="45" stroke="#3b82f6" stroke-width="2" class="anim-dash"/>
+            <line x1="180" y1="100" x2="220" y2="100" stroke="#3b82f6" stroke-width="2" class="anim-dash"/>
+            <line x1="180" y1="115" x2="220" y2="160" stroke="#3b82f6" stroke-width="2" class="anim-dash"/>
+          </svg>
+        </div>
+      </div>
+      <div class="topo-body">
+        <div class="tabs" data-tabgroup="hubspoke">
+          <button class="tab-btn active" data-tab="hs-event">Event Class</button>
+          <button class="tab-btn" data-tab="hs-public">Public Channel</button>
+          <button class="tab-btn" data-tab="hs-private">Private Channel</button>
+          <button class="tab-btn" data-tab="hs-listen">Echo Listener</button>
+        </div>
+        <div class="tab-panel active" id="hs-event">
+          <div class="code-label">app/Events/ScoreUpdated.php</div>
+<pre><code><span class="kw">class</span> <span class="cls">ScoreUpdated</span> <span class="kw">implements</span> <span class="cls">ShouldBroadcast</span>
+{
+    <span class="kw">use</span> <span class="cls">Dispatchable</span>, <span class="cls">InteractsWithSockets</span>, <span class="cls">SerializesModels</span>;
+
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">public</span> <span class="cls">string</span> <span class="var">$team</span>,
+        <span class="kw">public</span> <span class="cls">int</span> <span class="var">$score</span>,
+    ) {}
+
+    <span class="cm">// Every subscriber on this channel gets the event</span>
+    <span class="kw">public function</span> <span class="fn">broadcastOn</span>(): <span class="cls">Channel</span>
+    {
+        <span class="kw">return new</span> <span class="cls">Channel</span>(<span class="str">'scores'</span>);  <span class="cm">// Public — no auth needed</span>
+    }
+}</code></pre>
+        </div>
+        <div class="tab-panel" id="hs-public">
+          <div class="code-label">Public channel — anyone can subscribe</div>
+<pre><code><span class="cm">// No channel auth needed for public channels.</span>
+<span class="cm">// In broadcastOn():</span>
+<span class="kw">return new</span> <span class="cls">Channel</span>(<span class="str">'scores'</span>);
+
+<span class="cm">// Great for: live scores, news feeds, stock tickers,</span>
+<span class="cm">// public dashboards, site-wide announcements</span></code></pre>
+        </div>
+        <div class="tab-panel" id="hs-private">
+          <div class="code-label">Private channel — team members only</div>
+<pre><code><span class="cm">// In the Event class:</span>
+<span class="kw">return new</span> <span class="cls">PrivateChannel</span>(<span class="str">'team.'</span>.<span class="var">$this</span>-><span class="var">teamId</span>);
+
+<span class="cm">// In routes/channels.php:</span>
+<span class="cls">Broadcast</span>::<span class="fn">channel</span>(<span class="str">'team.{teamId}'</span>, <span class="kw">function</span> (<span class="var">$user</span>, <span class="var">$teamId</span>) {
+    <span class="kw">return</span> <span class="var">$user</span>-><span class="fn">belongsToTeam</span>(<span class="var">$teamId</span>);
+});
+
+<span class="cm">// All authorized team members see the broadcast</span></code></pre>
+        </div>
+        <div class="tab-panel" id="hs-listen">
+          <div class="code-label">JavaScript — Laravel Echo</div>
+<pre><code><span class="cm">// Public channel — anyone</span>
+<span class="cls">Echo</span>.<span class="fn">channel</span>(<span class="str">'scores'</span>)
+    .<span class="fn">listen</span>(<span class="str">'ScoreUpdated'</span>, (<span class="var">e</span>) => {
+        <span class="fn">updateScoreboard</span>(<span class="var">e</span>.<span class="var">team</span>, <span class="var">e</span>.<span class="var">score</span>);
+    });
+
+<span class="cm">// Private channel — requires auth</span>
+<span class="cls">Echo</span>.<span class="fn">private</span>(<span class="str">`team.${teamId}`</span>)
+    .<span class="fn">listen</span>(<span class="str">'TaskAssigned'</span>, (<span class="var">e</span>) => {
+        <span class="fn">addToTaskList</span>(<span class="var">e</span>.<span class="var">task</span>);
+    });</code></pre>
+        </div>
+
+        <div class="insight info">
+          <div class="insight-title">📡 This is the default pattern</div>
+          When the Laravel docs say "broadcasting," this is what they mean — server-originated events
+          fanning out to all subscribers. <strong>One event dispatch, N clients receive.</strong>
+          The server is the only message source.
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ N:N MESH ════════════ -->
+    <div class="topo-card">
+      <div class="topo-card-header">
+        <div class="topo-info">
+          <div class="topo-badge mesh">● Many-to-Many Mesh</div>
+          <div class="topo-name">🕸️ Logical Full Mesh via Presence + Whisper</div>
+          <div class="topo-subtitle">
+            Every participant can both send and receive. Uses Presence Channels for member awareness
+            and Client Events (whisper) for direct client-to-client-via-server communication.
+          </div>
+          <div class="topo-tags">
+            <span class="topo-tag">PresenceChannel</span>
+            <span class="topo-tag">Client Events</span>
+            <span class="topo-tag">Whisper</span>
+            <span class="topo-tag">N:N</span>
+            <span class="topo-tag">Collaborative</span>
+          </div>
+        </div>
+        <div class="topo-visual">
+          <svg viewBox="0 0 280 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- Reverb in center -->
+            <circle cx="140" cy="110" r="30" fill="rgba(255,45,32,0.1)" stroke="#FF2D20" stroke-width="2"/>
+            <text x="140" y="106" text-anchor="middle" fill="#FF2D20" font-size="14">⚙️</text>
+            <text x="140" y="122" text-anchor="middle" fill="#FF2D20" font-size="7" font-weight="700">REVERB</text>
+            <!-- Clients around the center -->
+            <circle cx="60" cy="40" r="18" fill="rgba(168,85,247,0.15)" stroke="#a855f7" stroke-width="2"/>
+            <text x="60" y="45" text-anchor="middle" fill="#a855f7" font-size="13">👤</text>
+
+            <circle cx="220" cy="40" r="18" fill="rgba(168,85,247,0.15)" stroke="#a855f7" stroke-width="2"/>
+            <text x="220" y="45" text-anchor="middle" fill="#a855f7" font-size="13">👤</text>
+
+            <circle cx="50" cy="170" r="18" fill="rgba(168,85,247,0.15)" stroke="#a855f7" stroke-width="2"/>
+            <text x="50" y="175" text-anchor="middle" fill="#a855f7" font-size="13">👤</text>
+
+            <circle cx="230" cy="170" r="18" fill="rgba(168,85,247,0.15)" stroke="#a855f7" stroke-width="2"/>
+            <text x="230" y="175" text-anchor="middle" fill="#a855f7" font-size="13">👤</text>
+
+            <circle cx="140" cy="205" r="18" fill="rgba(168,85,247,0.15)" stroke="#a855f7" stroke-width="2"/>
+            <text x="140" y="210" text-anchor="middle" fill="#a855f7" font-size="13">👤</text>
+
+            <!-- Lines to hub (bidirectional) -->
+            <line x1="75" y1="55" x2="115" y2="88" stroke="#a855f7" stroke-width="1.5" class="anim-dash"/>
+            <line x1="205" y1="55" x2="165" y2="88" stroke="#a855f7" stroke-width="1.5" class="anim-dash-reverse"/>
+            <line x1="65" y1="157" x2="115" y2="128" stroke="#a855f7" stroke-width="1.5" class="anim-dash"/>
+            <line x1="215" y1="157" x2="165" y2="128" stroke="#a855f7" stroke-width="1.5" class="anim-dash-reverse"/>
+            <line x1="140" y1="187" x2="140" y2="140" stroke="#a855f7" stroke-width="1.5" class="anim-dash"/>
+
+            <!-- Logical mesh connections (dotted, showing the logical topology) -->
+            <line x1="60" y1="58" x2="50" y2="152" stroke="rgba(168,85,247,0.2)" stroke-width="1" stroke-dasharray="3,4"/>
+            <line x1="78" y1="40" x2="202" y2="40" stroke="rgba(168,85,247,0.2)" stroke-width="1" stroke-dasharray="3,4"/>
+            <line x1="220" y1="58" x2="230" y2="152" stroke="rgba(168,85,247,0.2)" stroke-width="1" stroke-dasharray="3,4"/>
+            <line x1="68" y1="170" x2="122" y2="205" stroke="rgba(168,85,247,0.2)" stroke-width="1" stroke-dasharray="3,4"/>
+            <line x1="158" y1="205" x2="212" y2="170" stroke="rgba(168,85,247,0.2)" stroke-width="1" stroke-dasharray="3,4"/>
+            <line x1="78" y1="45" x2="212" y2="165" stroke="rgba(168,85,247,0.1)" stroke-width="1" stroke-dasharray="3,4"/>
+          </svg>
+        </div>
+      </div>
+      <div class="topo-body">
+        <div class="tabs" data-tabgroup="mesh">
+          <button class="tab-btn active" data-tab="mesh-presence">Presence Channel</button>
+          <button class="tab-btn" data-tab="mesh-whisper">Client Events (Whisper)</button>
+          <button class="tab-btn" data-tab="mesh-join">Join + Members</button>
+          <button class="tab-btn" data-tab="mesh-full">Full Example</button>
+        </div>
+        <div class="tab-panel active" id="mesh-presence">
+          <div class="code-label">routes/channels.php — Presence channel authorization</div>
+<pre><code><span class="cm">// Return user data to make it available to all members</span>
+<span class="cls">Broadcast</span>::<span class="fn">channel</span>(<span class="str">'room.{roomId}'</span>, <span class="kw">function</span> (<span class="var">$user</span>, <span class="var">$roomId</span>) {
+    <span class="kw">if</span> (<span class="var">$user</span>-><span class="fn">canJoinRoom</span>(<span class="var">$roomId</span>)) {
+        <span class="kw">return</span> [
+            <span class="str">'id'</span> => <span class="var">$user</span>-><span class="var">id</span>,
+            <span class="str">'name'</span> => <span class="var">$user</span>-><span class="var">name</span>,
+            <span class="str">'avatar'</span> => <span class="var">$user</span>-><span class="var">avatar_url</span>,
+        ];
+    }
+});</code></pre>
+        </div>
+        <div class="tab-panel" id="mesh-whisper">
+          <div class="code-label">JavaScript — Client Events bypass the Laravel backend entirely</div>
+<pre><code><span class="cm">// 🔥 THE KEY MECHANISM: whisper()</span>
+<span class="cm">// Client → Reverb → All Other Clients (NO server roundtrip!)</span>
+
+<span class="kw">const</span> <span class="var">channel</span> = <span class="cls">Echo</span>.<span class="fn">join</span>(<span class="str">`room.${roomId}`</span>);
+
+<span class="cm">// ANY member can send a client event</span>
+<span class="var">channel</span>.<span class="fn">whisper</span>(<span class="str">'typing'</span>, {
+    <span class="var">user</span>: <span class="var">currentUser</span>.<span class="var">name</span>,
+    <span class="var">cursor</span>: { <span class="var">x</span>: <span class="num">150</span>, <span class="var">y</span>: <span class="num">320</span> },
+});
+
+<span class="cm">// ALL other members receive it</span>
+<span class="var">channel</span>.<span class="fn">listenForWhisper</span>(<span class="str">'typing'</span>, (<span class="var">e</span>) => {
+    <span class="fn">showRemoteCursor</span>(<span class="var">e</span>.<span class="var">user</span>, <span class="var">e</span>.<span class="var">cursor</span>);
+});
+
+<span class="cm">// When EVERY participant whispers and EVERY participant</span>
+<span class="cm">// listens → you have a logical FULL MESH</span></code></pre>
+        </div>
+        <div class="tab-panel" id="mesh-join">
+          <div class="code-label">JavaScript — Member awareness (who's online)</div>
+<pre><code><span class="cls">Echo</span>.<span class="fn">join</span>(<span class="str">`room.${roomId}`</span>)
+    <span class="cm">// Fires once with the full member list</span>
+    .<span class="fn">here</span>((<span class="var">members</span>) => {
+        <span class="var">onlineUsers</span>.<span class="var">value</span> = <span class="var">members</span>;
+    })
+    <span class="cm">// Fires when someone joins</span>
+    .<span class="fn">joining</span>((<span class="var">member</span>) => {
+        <span class="var">onlineUsers</span>.<span class="var">value</span>.<span class="fn">push</span>(<span class="var">member</span>);
+        <span class="fn">showToast</span>(<span class="str">`${</span><span class="var">member</span>.<span class="var">name</span><span class="str">} joined`</span>);
+    })
+    <span class="cm">// Fires when someone leaves</span>
+    .<span class="fn">leaving</span>((<span class="var">member</span>) => {
+        <span class="var">onlineUsers</span>.<span class="var">value</span> = <span class="var">onlineUsers</span>.<span class="var">value</span>
+            .<span class="fn">filter</span>(<span class="var">u</span> => <span class="var">u</span>.<span class="var">id</span> !== <span class="var">member</span>.<span class="var">id</span>);
+    });</code></pre>
+        </div>
+        <div class="tab-panel" id="mesh-full">
+          <div class="code-label">Full collaborative editing example</div>
+<pre><code><span class="cm">// A complete N:N mesh pattern: collaborative document editing</span>
+
+<span class="kw">const</span> <span class="var">channel</span> = <span class="cls">Echo</span>.<span class="fn">join</span>(<span class="str">`document.${docId}`</span>)
+    .<span class="fn">here</span>((<span class="var">users</span>) => <span class="fn">renderAvatars</span>(<span class="var">users</span>))
+    .<span class="fn">joining</span>((<span class="var">u</span>) => <span class="fn">addAvatar</span>(<span class="var">u</span>))
+    .<span class="fn">leaving</span>((<span class="var">u</span>) => <span class="fn">removeAvatar</span>(<span class="var">u</span>));
+
+<span class="cm">// Every keystroke from ANY user broadcasts to ALL others</span>
+<span class="var">editor</span>.<span class="fn">on</span>(<span class="str">'change'</span>, (<span class="var">delta</span>) => {
+    <span class="var">channel</span>.<span class="fn">whisper</span>(<span class="str">'edit'</span>, {
+        <span class="var">userId</span>: <span class="var">me</span>.<span class="var">id</span>,
+        <span class="var">delta</span>: <span class="var">delta</span>,
+        <span class="var">cursor</span>: <span class="var">editor</span>.<span class="fn">getCursorPosition</span>(),
+    });
+});
+
+<span class="cm">// Every user receives edits from every other user</span>
+<span class="var">channel</span>.<span class="fn">listenForWhisper</span>(<span class="str">'edit'</span>, (<span class="var">e</span>) => {
+    <span class="var">editor</span>.<span class="fn">applyRemoteDelta</span>(<span class="var">e</span>.<span class="var">delta</span>);
+    <span class="fn">showRemoteCursor</span>(<span class="var">e</span>.<span class="var">userId</span>, <span class="var">e</span>.<span class="var">cursor</span>);
+});
+
+<span class="cm">// Result: N users, each sending to (N-1) others = FULL MESH</span></code></pre>
+        </div>
+
+        <div class="insight magic">
+          <div class="insight-title">🔮 The Mesh Secret: Client Events</div>
+          <strong>Whisper events</strong> go Client → Reverb → All Other Clients, completely
+          <strong>bypassing your Laravel backend</strong>. Reverb handles the fan-out natively.
+          When every participant whispers and listens, the logical topology is a <strong>full mesh</strong>.
+          This is how you build Google Docs-style collaboration, multiplayer games, or live cursors.
+        </div>
+
+        <div class="insight warn" style="margin-top:12px">
+          <div class="insight-title">⚠️ Important Caveat</div>
+          Client events require <strong>Presence Channels</strong> (or Private Channels with client events enabled).
+          You must also enable <code>client_events</code> in your Reverb/Pusher config. These events
+          are <strong>not persisted</strong> — if a user is offline, they miss them.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     CHANNEL TYPES
+     ═══════════════════════════════════════════════════════ -->
+<section id="channels" class="reveal">
+  <div class="section-label">Channel Types</div>
+  <h2 class="section-title">The Three Channel Types</h2>
+  <p class="section-desc">
+    Channels are the routing mechanism. Your choice of channel type determines
+    who can subscribe, what metadata is available, and whether client events are allowed.
+  </p>
+
+  <div class="channel-grid">
+    <div class="channel-card">
+      <div class="channel-icon">📢</div>
+      <div class="channel-name">Public Channel</div>
+      <div class="channel-syntax">new Channel('name')</div>
+      <div class="channel-desc">Open to anyone. No authentication or authorization required.</div>
+      <ul class="channel-features">
+        <li>No auth callback needed</li>
+        <li>Anyone with the channel name can subscribe</li>
+        <li>Server-to-client events only</li>
+        <li>No member list / no presence awareness</li>
+        <li>Ideal for public data feeds</li>
+      </ul>
+    </div>
+    <div class="channel-card">
+      <div class="channel-icon">🔐</div>
+      <div class="channel-name">Private Channel</div>
+      <div class="channel-syntax">new PrivateChannel('name')</div>
+      <div class="channel-desc">Requires authentication. Server verifies each subscription attempt.</div>
+      <ul class="channel-features">
+        <li>Auth callback in routes/channels.php</li>
+        <li>Returns true/false for access</li>
+        <li>Server-to-client events</li>
+        <li>Client events with configuration</li>
+        <li>Ideal for team/user-scoped data</li>
+      </ul>
+    </div>
+    <div class="channel-card">
+      <div class="channel-icon">👥</div>
+      <div class="channel-name">Presence Channel</div>
+      <div class="channel-syntax">new PresenceChannel('name')</div>
+      <div class="channel-desc">Private + member awareness. Know who's online and enable client events.</div>
+      <ul class="channel-features">
+        <li>Auth callback returns user data array</li>
+        <li>here(), joining(), leaving() callbacks</li>
+        <li>Full member list always available</li>
+        <li>Client events (whisper) built-in</li>
+        <li>Ideal for collaboration & chat</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     COMPARISON MATRIX
+     ═══════════════════════════════════════════════════════ -->
+<section id="comparison" class="reveal">
+  <div class="section-label">Comparison</div>
+  <h2 class="section-title">Topology Comparison Matrix</h2>
+  <p class="section-desc">A side-by-side breakdown of all three patterns across key dimensions.</p>
+
+  <div class="comparison-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>🔒 1:1 Point-to-Point</th>
+          <th>📡 1:N Hub &amp; Spoke</th>
+          <th>🕸️ N:N Mesh</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">Channel Type</td>
+          <td>PrivateChannel</td>
+          <td>Channel / PrivateChannel</td>
+          <td>PresenceChannel</td>
+        </tr>
+        <tr>
+          <td class="row-label">Message Source</td>
+          <td>Server only</td>
+          <td>Server only</td>
+          <td>Server + Any Client</td>
+        </tr>
+        <tr>
+          <td class="row-label">Message Targets</td>
+          <td>1 specific user</td>
+          <td>All subscribers</td>
+          <td>All other members</td>
+        </tr>
+        <tr>
+          <td class="row-label">Auth Required</td>
+          <td><span class="check">✓ Yes</span></td>
+          <td><span class="partial">Public: No / Private: Yes</span></td>
+          <td><span class="check">✓ Yes (returns user data)</span></td>
+        </tr>
+        <tr>
+          <td class="row-label">Member Awareness</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ here() / joining() / leaving()</span></td>
+        </tr>
+        <tr>
+          <td class="row-label">Client Events (Whisper)</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="cross">✗ No (standard config)</span></td>
+          <td><span class="check">✓ Yes — the key enabler</span></td>
+        </tr>
+        <tr>
+          <td class="row-label">Bypasses Laravel Backend</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ Whisper events do</span></td>
+        </tr>
+        <tr>
+          <td class="row-label">Use Cases</td>
+          <td>DMs, notifications, alerts</td>
+          <td>Dashboards, feeds, scores, announcements</td>
+          <td>Chat rooms, collaboration, multiplayer games</td>
+        </tr>
+        <tr>
+          <td class="row-label">Laravel Echo Method</td>
+          <td><code>Echo.private()</code></td>
+          <td><code>Echo.channel()</code> / <code>.private()</code></td>
+          <td><code>Echo.join()</code></td>
+        </tr>
+        <tr>
+          <td class="row-label">Scales via Redis</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓ Including whisper fan-out</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     HORIZONTAL SCALING
+     ═══════════════════════════════════════════════════════ -->
+<section id="scaling" class="reveal">
+  <div class="section-label">Scaling</div>
+  <h2 class="section-title">Horizontal Scaling with Redis Pub/Sub</h2>
+  <p class="section-desc">
+    When you run multiple Reverb instances, Redis pub/sub synchronizes channel state and events
+    across all servers. The mesh topology works seamlessly even in a multi-server cluster.
+  </p>
+
+  <div class="scale-diagram">
+    <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+      <!-- Redis at center -->
+      <rect x="320" y="140" width="160" height="70" rx="12" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-width="2"/>
+      <text x="400" y="170" text-anchor="middle" fill="#ef4444" font-size="14" font-weight="800">Redis Pub/Sub</text>
+      <text x="400" y="190" text-anchor="middle" fill="#ef4444" font-size="9">Channel sync + event relay</text>
+
+      <!-- Reverb Server 1 -->
+      <rect x="40" y="30" width="180" height="70" rx="12" fill="rgba(255,45,32,0.08)" stroke="#FF2D20" stroke-width="2"/>
+      <text x="130" y="60" text-anchor="middle" fill="#FF2D20" font-size="12" font-weight="700">Reverb Server 1</text>
+      <text x="130" y="80" text-anchor="middle" fill="#9898a8" font-size="9">500 connections</text>
+
+      <!-- Reverb Server 2 -->
+      <rect x="580" y="30" width="180" height="70" rx="12" fill="rgba(255,45,32,0.08)" stroke="#FF2D20" stroke-width="2"/>
+      <text x="670" y="60" text-anchor="middle" fill="#FF2D20" font-size="12" font-weight="700">Reverb Server 2</text>
+      <text x="670" y="80" text-anchor="middle" fill="#9898a8" font-size="9">500 connections</text>
+
+      <!-- Reverb Server 3 -->
+      <rect x="310" y="260" width="180" height="70" rx="12" fill="rgba(255,45,32,0.08)" stroke="#FF2D20" stroke-width="2"/>
+      <text x="400" y="290" text-anchor="middle" fill="#FF2D20" font-size="12" font-weight="700">Reverb Server 3</text>
+      <text x="400" y="310" text-anchor="middle" fill="#9898a8" font-size="9">500 connections</text>
+
+      <!-- Connections to Redis -->
+      <line x1="220" y1="90" x2="330" y2="145" stroke="#ef4444" stroke-width="2" class="anim-dash"/>
+      <line x1="580" y1="90" x2="470" y2="145" stroke="#ef4444" stroke-width="2" class="anim-dash-reverse"/>
+      <line x1="400" y1="210" x2="400" y2="260" stroke="#ef4444" stroke-width="2" class="anim-dash"/>
+
+      <!-- Client clusters -->
+      <circle cx="50" cy="160" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <circle cx="80" cy="150" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <circle cx="60" cy="185" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <line x1="65" y1="100" x2="60" y2="148" stroke="#a855f7" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="100" y1="100" x2="80" y2="140" stroke="#a855f7" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <circle cx="720" cy="160" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <circle cx="750" cy="150" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <circle cx="740" cy="185" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <line x1="700" y1="100" x2="720" y2="148" stroke="#a855f7" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="740" y1="100" x2="750" y2="140" stroke="#a855f7" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <circle cx="300" cy="340" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <circle cx="490" cy="340" r="10" fill="rgba(168,85,247,0.2)" stroke="#a855f7"/>
+      <line x1="370" y1="330" x2="310" y2="340" stroke="#a855f7" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="430" y1="330" x2="480" y2="340" stroke="#a855f7" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Whisper path annotation -->
+      <text x="400" y="240" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">
+        Whisper on Server 1 → Redis → Server 2 &amp; 3 → their clients
+      </text>
+    </svg>
+  </div>
+
+  <div class="insight tip" style="margin-top:24px">
+    <div class="insight-title">🔄 Scaling Config (from the official docs)</div>
+    Enable horizontal scaling by setting Redis as the pub/sub backend. Reverb uses Redis to relay
+    events (including client whisper events) between server instances. This is configured in
+    <code>config/reverb.php</code> under the <code>scaling</code> key. All three topologies work
+    identically whether you run 1 or 100 Reverb server instances.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     FINAL TRUTH
+     ═══════════════════════════════════════════════════════ -->
+<section id="summary" class="reveal">
+  <div class="section-label">Summary</div>
+  <h2 class="section-title">The Architectural Truth</h2>
+
+  <div class="truth-box">
+    <h3>Laravel Reverb supports ALL THREE topologies</h3>
+    <p>
+      <strong>Physically:</strong> Always hub-and-spoke. Every client connects to Reverb. Clients never connect to each other.
+    </p>
+    <p>
+      <strong>Logically:</strong> Your channel and event choices create the pattern.
+      Private channels → 1:1. Standard broadcast → 1:N. Presence channels + whisper → N:N mesh.
+    </p>
+    <p style="color:var(--red); font-weight:700; margin-top:16px;">
+      It is NOT limited to peer-to-peer. The default mode is actually 1:N broadcasting.
+      Mesh is an advanced but fully supported pattern.
+    </p>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="summary-icon">🔒</div>
+      <div class="summary-label">1:1 Point-to-Point</div>
+      <div class="summary-value">PrivateChannel scoped to one user</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-icon">📡</div>
+      <div class="summary-label">1:N Hub & Spoke</div>
+      <div class="summary-value">The default — ShouldBroadcast to subscribers</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-icon">🕸️</div>
+      <div class="summary-label">N:N Mesh</div>
+      <div class="summary-value">PresenceChannel + whisper = full mesh</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-icon">🔄</div>
+      <div class="summary-label">Horizontal Scale</div>
+      <div class="summary-value">Redis pub/sub across server instances</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- .container -->
+
+<footer>
+  <p>Built from the official <a href="https://laravel.com/docs/11.x/reverb">Laravel Reverb</a> &
+  <a href="https://laravel.com/docs/11.x/broadcasting">Broadcasting</a> documentation.</p>
+  <p style="margin-top:8px;">All three topologies are production-ready. Choose the pattern that matches your use case.</p>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT — Tab switching & scroll reveals
+     ═══════════════════════════════════════════════════════ -->
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabGroup = btn.closest('.topo-body') || btn.closest('.topo-card');
+    const targetId = btn.dataset.tab;
+
+    // Deactivate siblings
+    tabGroup.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    tabGroup.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+    // Activate target
+    btn.classList.add('active');
+    document.getElementById(targetId)?.classList.add('active');
+  });
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
