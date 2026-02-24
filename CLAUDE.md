@@ -124,6 +124,20 @@ bin/deploy --skip-build # PHP-only changes: skip frontend rebuild
 
 The script enforces clean main branch before deploying. SSH always as `markc@mko` (not root) to avoid ownership issues.
 
+## Mesh Deployment
+
+Standardised `web.*` subdomain convention — every node's C&C entry point is `web.<domain>`.
+
+| Node | URL | Role |
+|------|-----|------|
+| mko | `web.kanary.org` | Production primary |
+| mmc | `web.motd.com` | Production node |
+| cachyos | `web.goldcoast.org` | Dev workstation |
+
+Nodes POST heartbeats every 30s to mko (central dashboard) over WireGuard. Identity is config-driven via `MESH_NODE_NAME` and `MESH_NODE_WG_IP` in `.env`.
+
+Each node runs the full stack: FrankenPHP, Stalwart Mail, PostgreSQL+pgvector, Reverb, Ollama (nomic-embed-text).
+
 ## Environment
 
 - `DB_CONNECTION=pgsql` — PostgreSQL

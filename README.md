@@ -50,13 +50,13 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript
 
 ## Mesh deployment
 
-markweb runs as a replicated instance across multiple nodes, each with its own local database, mail server, and Ollama instance. Nodes heartbeat into their own PostgreSQL and broadcast state via Reverb.
+markweb runs as a replicated instance across multiple nodes, each with its own local database, mail server, and Ollama instance. Nodes heartbeat every 30 seconds to the central dashboard (mko) over WireGuard and broadcast state via Reverb.
 
 | Node | URL | Role |
 |------|-----|------|
-| mmc | `web.motd.com` | Production |
-| mko | `web.kanary.org` | Staging / dev |
-| cachyos | `web.goldcoast.org` | Local workstation |
+| mko | `web.kanary.org` | Production primary |
+| mmc | `web.motd.com` | Production node |
+| cachyos | `web.goldcoast.org` | Dev workstation |
 
 Identity is config-driven — each node reads `MESH_NODE_NAME` and `MESH_NODE_WG_IP` from `.env`.
 
@@ -86,6 +86,10 @@ markweb was born on **23 February 2026** in a single intense weekend session. Th
 The concept, architecture, and every line of code were created by **Mark Constable** ([@markc](https://github.com/markc)), working in close collaboration with **Claude Code** (Anthropic's AI coding agent). What would normally be weeks of integration work — unifying service layers, resolving namespace conflicts, building a coherent UI, deploying across three nodes — was accomplished in days through continuous human-AI pair programming.
 
 This is software built the way it should be: one person's vision, executed at the speed of thought.
+
+## Documentation
+
+[markweb.dev](https://markweb.dev) — project docs and interactive explainers (GitHub Pages).
 
 ## Licence
 
