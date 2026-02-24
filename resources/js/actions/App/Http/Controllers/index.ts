@@ -3,6 +3,7 @@ import JmapAuthController from './JmapAuthController'
 import JmapAttachmentController from './JmapAttachmentController'
 import SystemEventController from './SystemEventController'
 import OpenClawPushController from './OpenClawPushController'
+import MeshController from './MeshController'
 import DashboardController from './DashboardController'
 import Agent from './Agent'
 import ChatController from './ChatController'
@@ -25,6 +26,7 @@ const Controllers = {
     JmapAttachmentController: Object.assign(JmapAttachmentController, JmapAttachmentController),
     SystemEventController: Object.assign(SystemEventController, SystemEventController),
     OpenClawPushController: Object.assign(OpenClawPushController, OpenClawPushController),
+    MeshController: Object.assign(MeshController, MeshController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     Agent: Object.assign(Agent, Agent),
     ChatController: Object.assign(ChatController, ChatController),

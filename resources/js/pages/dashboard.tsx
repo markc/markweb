@@ -3,6 +3,7 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { MessageSquare, Hash, Coins, Cpu, Pencil, Trash2, Plus, Check, X, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { DataTable } from '@/components/data-table/data-table';
+import { MeshStatus } from '@/components/mesh-status';
 import type { SystemPromptTemplate } from '@/types/chat';
 
 type CostByModel = {
@@ -301,6 +302,9 @@ export default function Dashboard() {
                         ))}
                     </div>
                 </div>
+
+                {/* Mesh Nodes */}
+                <MeshStatus />
 
                 {/* Global Config */}
                 <div>

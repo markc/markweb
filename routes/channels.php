@@ -16,3 +16,8 @@ Broadcast::channel('chat.user.{userId}', function ($user, $userId) {
 Broadcast::channel('chat.session.web.{userId}.{uuid}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
+
+// Mesh node status — any authenticated user
+Broadcast::channel('mesh', function ($user) {
+    return $user !== null;
+});

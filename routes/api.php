@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FileLinkController;
+use App\Http\Controllers\MeshController;
 use App\Http\Controllers\OpenClawPushController;
 use App\Http\Controllers\SystemEventController;
 use Illuminate\Support\Facades\Route;
@@ -30,3 +31,7 @@ Route::post('system-events/push', [SystemEventController::class, 'push'])->name(
 
 // OpenClaw async push — external bearer token auth
 Route::post('openclaw/push', [OpenClawPushController::class, 'push'])->name('openclaw.push');
+
+// Mesh node routes
+Route::middleware(['web', 'auth'])->get('mesh/nodes', [MeshController::class, 'nodes'])->name('mesh.nodes');
+Route::post('mesh/heartbeat', [MeshController::class, 'heartbeat'])->name('mesh.heartbeat');
