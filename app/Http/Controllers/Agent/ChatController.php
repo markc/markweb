@@ -82,7 +82,7 @@ class ChatController extends Controller
             systemPrompt: $request->input('system_prompt'),
         );
 
-        ProcessChatMessage::dispatch($message);
+        ProcessChatMessage::dispatchSync($message);
 
         return response()->json([
             'session_key' => $sessionKey,
