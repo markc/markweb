@@ -8,6 +8,7 @@ interface LocalMessage {
     role: 'user' | 'assistant';
     content: string;
     isStreaming?: boolean;
+    activeTool?: string | null;
 }
 
 export default function MessageBubble({ message }: { message: LocalMessage }) {
@@ -38,14 +39,23 @@ export default function MessageBubble({ message }: { message: LocalMessage }) {
                                 {message.content}
                             </Streamdown>
                         ) : null}
-                        {message.isStreaming && !message.content && (
+                        {message.isStreaming && !message.content && !message.activeTool && (
                             <span className="inline-flex gap-1">
                                 <span className="animate-pulse">●</span>
                                 <span className="animate-pulse" style={{ animationDelay: '0.2s' }}>●</span>
                                 <span className="animate-pulse" style={{ animationDelay: '0.4s' }}>●</span>
                             </span>
                         )}
-                        {message.isStreaming && message.content && (
+                        {message.activeTool && (
+                            <span className="mt-2 flex items-center gap-2 text-xs" style={{ color: 'var(--scheme-fg-muted)' }}>
+                                <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
+                                Using {message.activeTool}...
+                            </span>
+                        )}
+                        {message.isStreaming && message.content && !message.activeTool && (
                             <span className="ml-1 inline-block h-4 w-1 animate-pulse bg-current" />
                         )}
                     </div>

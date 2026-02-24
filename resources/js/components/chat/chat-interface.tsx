@@ -20,6 +20,7 @@ interface LocalMessage {
     role: 'user' | 'assistant';
     content: string;
     isStreaming?: boolean;
+    activeTool?: string | null;
 }
 
 function getCsrfToken(): string {
@@ -95,6 +96,24 @@ export default function ChatInterface({ session, availableModels }: Props) {
             if (id) {
                 setMessages((prev) =>
                     prev.map((m) => (m.id === id ? { ...m, content: text } : m))
+                );
+            }
+        });
+
+        channel.listen('.tool_call', (e: { tool_name: string }) => {
+            const id = assistantIdRef.current;
+            if (id) {
+                setMessages((prev) =>
+                    prev.map((m) => (m.id === id ? { ...m, activeTool: e.tool_name } : m))
+                );
+            }
+        });
+
+        channel.listen('.tool_result', () => {
+            const id = assistantIdRef.current;
+            if (id) {
+                setMessages((prev) =>
+                    prev.map((m) => (m.id === id ? { ...m, activeTool: null } : m))
                 );
             }
         });
