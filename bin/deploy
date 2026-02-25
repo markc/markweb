@@ -5,7 +5,7 @@
 set -euo pipefail
 
 REMOTE="markc@mko"
-APP="/srv/markweb.kanary.org/web/app"
+APP="/srv/web.kanary.org/web/app"
 BUN='export PATH="$HOME/.bun/bin:$PATH"'
 
 # Check we're on main with a clean tree
