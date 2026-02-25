@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Events\MeshTaskUpdated;
+use App\Exceptions\MeshPermissionDeniedException;
+use App\Jobs\ProcessMemorySearchTask;
 use App\Jobs\ProcessMeshTask;
 use App\Models\MeshTask;
+use App\Services\Mesh\MeshPermissionGuard;
 use App\Services\Mesh\MeshTaskService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +19,7 @@ class MeshTaskController extends Controller
     /**
      * Receive a task dispatched from a remote node — bearer token auth.
      */
-    public function dispatch(Request $request): JsonResponse
+    public function dispatch(Request $request, MeshPermissionGuard $guard): JsonResponse
     {
         $this->authenticateBearer($request);
 
@@ -24,7 +27,7 @@ class MeshTaskController extends Controller
             'id' => 'required|uuid',
             'origin_node' => 'required|string|max:100',
             'target_node' => 'required|string|max:100',
-            'type' => 'required|string|in:prompt,embed,tool',
+            'type' => 'required|string|in:prompt,embed,tool,memory_search',
             'prompt' => 'required|string',
             'provider' => 'nullable|string',
             'model' => 'nullable|string',
@@ -40,8 +43,24 @@ class MeshTaskController extends Controller
             array_merge($validated, ['status' => 'received']),
         );
 
-        // Queue for processing
-        ProcessMeshTask::dispatch($task->id);
+        // Permission guard — deny before queuing
+        try {
+            $guard->authorize($task);
+        } catch (MeshPermissionDeniedException $e) {
+            $task->markFailed($e->getMessage());
+
+            return response()->json([
+                'id' => $task->id,
+                'status' => 'failed',
+                'error' => $e->getMessage(),
+            ], 403);
+        }
+
+        // Queue for processing — route by task type
+        match ($task->type) {
+            'memory_search' => ProcessMemorySearchTask::dispatch($task->id),
+            default => ProcessMeshTask::dispatch($task->id),
+        };
 
         broadcast(new MeshTaskUpdated($task));
 

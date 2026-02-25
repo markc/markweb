@@ -10,6 +10,11 @@ class SessionResolver
 {
     public function resolve(IncomingMessage $message): AgentSession
     {
+        // Mesh tasks can override trust level via metadata
+        $trustLevel = ($message->channel === 'mesh' && isset($message->metadata['trust_level']))
+            ? $message->metadata['trust_level']
+            : config("channels.{$message->channel}.trust_level", 'standard');
+
         return AgentSession::firstOrCreate(
             ['session_key' => $message->sessionKey],
             [
@@ -17,7 +22,7 @@ class SessionResolver
                 'user_id' => $message->userId,
                 'title' => 'New Chat',
                 'channel' => $message->channel,
-                'trust_level' => config("channels.{$message->channel}.trust_level", 'standard'),
+                'trust_level' => $trustLevel,
                 'model' => $message->model,
                 'provider' => $message->provider,
                 'system_prompt' => $message->systemPrompt,

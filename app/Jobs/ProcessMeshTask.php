@@ -8,18 +8,19 @@ use App\DTOs\IncomingMessage;
 use App\Models\MeshTask;
 use App\Models\User;
 use App\Services\Agent\AgentRuntime;
+use App\Services\Mesh\Concerns\SendsCallbacks;
+use App\Services\Mesh\MeshPermissionGuard;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ProcessMeshTask implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SendsCallbacks, SerializesModels;
 
     public int $tries = 1;
 
@@ -29,13 +30,14 @@ class ProcessMeshTask implements ShouldQueue
         public string $taskId,
     ) {}
 
-    public function handle(AgentRuntime $runtime): void
+    public function handle(AgentRuntime $runtime, MeshPermissionGuard $guard): void
     {
         $task = MeshTask::findOrFail($this->taskId);
 
         $task->markProcessing();
 
         $user = $this->resolveSystemUser($task->origin_node);
+        $trustLevel = $guard->getEffectiveTrustLevel($task->origin_node);
 
         $message = new IncomingMessage(
             channel: 'mesh',
@@ -46,6 +48,7 @@ class ProcessMeshTask implements ShouldQueue
             provider: $task->provider,
             model: $task->model,
             systemPrompt: $task->system_prompt,
+            metadata: ['trust_level' => $trustLevel],
         );
 
         try {
@@ -64,34 +67,6 @@ class ProcessMeshTask implements ShouldQueue
         // POST result back to origin's callback URL
         if ($task->callback_url) {
             $this->sendCallback($task);
-        }
-    }
-
-    protected function sendCallback(MeshTask $task): void
-    {
-        $token = config('services.system_event_token');
-
-        $payload = [
-            'id' => $task->id,
-            'status' => $task->status,
-            'result' => $task->result,
-            'error' => $task->error,
-            'usage' => $task->usage,
-            'started_at' => $task->started_at?->toISOString(),
-            'completed_at' => $task->completed_at?->toISOString(),
-        ];
-
-        try {
-            Http::withToken($token)
-                ->timeout(15)
-                ->withoutVerifying()
-                ->post($task->callback_url, $payload);
-        } catch (\Throwable $e) {
-            Log::warning('MeshTask callback failed', [
-                'task_id' => $task->id,
-                'callback_url' => $task->callback_url,
-                'error' => $e->getMessage(),
-            ]);
         }
     }
 

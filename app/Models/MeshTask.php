@@ -98,7 +98,12 @@ class MeshTask extends Model
 
     public function isTerminal(): bool
     {
-        return in_array($this->status, ['completed', 'failed']);
+        return in_array($this->status, ['completed', 'failed', 'canceled']);
+    }
+
+    public function isCanceled(): bool
+    {
+        return $this->status === 'canceled';
     }
 
     public function markDispatched(): void

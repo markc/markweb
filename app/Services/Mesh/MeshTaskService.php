@@ -6,6 +6,7 @@ namespace App\Services\Mesh;
 
 use App\Events\MeshTaskUpdated;
 use App\Jobs\DispatchMeshTask;
+use App\Jobs\ProcessMemorySearchTask;
 use App\Jobs\ProcessMeshTask;
 use App\Models\MeshTask;
 use Illuminate\Support\Str;
@@ -49,6 +50,44 @@ class MeshTaskService
             $task->markDispatched();
             $task->markReceived();
             ProcessMeshTask::dispatch($task->id);
+        } else {
+            DispatchMeshTask::dispatch($task->id);
+        }
+
+        return $task;
+    }
+
+    /**
+     * Dispatch a memory search task to a target node.
+     */
+    public function dispatchMemorySearch(
+        string $query,
+        ?string $targetNode = null,
+        ?int $agentId = null,
+        int $limit = 10,
+    ): MeshTask {
+        $originNode = config('mesh.node_name');
+        $targetNode ??= $originNode;
+
+        $task = MeshTask::create([
+            'id' => Str::uuid()->toString(),
+            'origin_node' => $originNode,
+            'target_node' => $targetNode,
+            'status' => 'pending',
+            'type' => 'memory_search',
+            'prompt' => $query,
+            'callback_url' => $this->buildCallbackUrl(),
+            'meta' => [
+                'agent_id' => $agentId,
+                'limit' => $limit,
+            ],
+        ]);
+
+        // Self-dispatch optimisation: skip HTTP, queue locally
+        if ($targetNode === $originNode) {
+            $task->markDispatched();
+            $task->markReceived();
+            ProcessMemorySearchTask::dispatch($task->id);
         } else {
             DispatchMeshTask::dispatch($task->id);
         }

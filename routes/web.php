@@ -63,7 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('addressbooks/{addressbook}/contacts/bulk-delete', [App\Http\Controllers\ContactController::class, 'bulkDestroy'])->name('contacts.bulk-destroy');
 });
 
-// Well-known DAV discovery redirects
+// Well-known discovery endpoints
+Route::get('/.well-known/agent.json', [App\Http\Controllers\AgentCardController::class, 'show']);
 Route::redirect('/.well-known/caldav', '/dav/', 301);
 Route::redirect('/.well-known/carddav', '/dav/', 301);
 
