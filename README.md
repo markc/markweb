@@ -1,16 +1,37 @@
 # markweb
 
-A unified command-and-control platform for personal infrastructure, AI agents, and communications — built on Laravel 12, Inertia 2, and React 19.
+A multi-agent mesh platform where every node runs its own AI agent, mail server, and database — and they all talk to each other in plain-text Markdown over WebSockets. Built on Laravel 12, Inertia 2, and React 19.
 
 ## What is markweb?
 
-markweb consolidates three previously separate projects into a single mesh-aware application:
+markweb is the control plane for a **NetServa v4.0** mesh — a network of fully provisioned nodes connected over WireGuard, each running an identical service stack:
 
-- **AI Agent Platform** — Multi-model chat with tool use, sandboxed code execution, semantic memory, and scheduled routines. Supports 7 LLM providers (Anthropic, OpenAI, Gemini, Groq, xAI, DeepSeek, OpenRouter) with Anthropic Claude as the default. Built on `laravel/ai` with real-time WebSocket streaming via Laravel Reverb.
-- **JMAP Webmail & PIM** — Full email client backed by Stalwart Mail Server over JMAP, with CalDAV/CardDAV contacts and calendars via SabreDAV. Zustand-managed frontend stores handle session, mailbox, email, and compose state. A reverse proxy layer rewrites Stalwart's internal URLs to the app's external domain.
-- **Mesh C&C** — Real-time dashboard for a WireGuard-connected cluster of nodes. Each node heartbeats every 30 seconds to the primary, syncs full mesh state, and broadcasts updates live via Reverb.
+| Service | Provides | Software |
+|---------|----------|----------|
+| Web & App | HTTPS, reverse proxy, PHP runtime | FrankenPHP (Caddy) |
+| Mail | IMAP, JMAP, SMTP, spam filtering | Stalwart Mail Server |
+| Database | Relational storage, vector embeddings, full-text search | PostgreSQL + pgvector + tsvector |
+| DNS | Authoritative DNS, mesh service discovery (SRV, DNS-SD) | PowerDNS |
+| Inference | Local embedding generation | Ollama (nomic-embed-text) |
+| VPN | Encrypted inter-node transport | WireGuard |
+| WebSocket | Real-time streaming, mesh events | Laravel Reverb |
+| CalDAV/CardDAV | Calendars, contacts | SabreDAV |
 
-Every node's entry point follows the **`web.*` subdomain convention**: `web.kanary.org`, `web.motd.com`, `web.goldcoast.org` — one URL per node, gated by HTTP basic auth before you reach the login page.
+Every node is self-contained — it can serve web, send mail, resolve DNS, and run AI inference independently. The critical design choice is **Markdown as the wire protocol**: all inter-node communication and all agent-to-user conversation flows as plain-text Markdown over WebSocket channels. This means every message in the system is simultaneously human-readable, LLM-native, and machine-parseable — no serialisation layer, no binary framing, no impedance mismatch between what the agent thinks and what the network carries.
+
+### Why multi-agent mesh matters
+
+Each node runs its own AI agent with its own memory, tools, and local context. An agent on `web.motd.com` knows that node's mail, DNS, and system state. An agent on `web.kanary.org` knows its own. Because they share a common Markdown protocol over WireGuard, agents can coordinate across nodes — one agent can ask another to check a DNS record, verify mail delivery, or report system health, and the response is the same Markdown a human operator would read. No API translation, no schema negotiation. The mesh becomes a distributed team of specialist agents, each grounded in its own infrastructure, communicating in a format that's natively understood by every LLM.
+
+This is the difference between "AI that controls one server" and "AI that operates a network."
+
+### Application layers
+
+- **AI Agent Platform** — Multi-model chat with tool use, sandboxed code execution, semantic memory, and scheduled routines. Supports 7 LLM providers (Anthropic, OpenAI, Gemini, Groq, xAI, DeepSeek, OpenRouter) with Anthropic Claude as the default. Built on `laravel/ai` with real-time WebSocket streaming via Reverb.
+- **JMAP Webmail & PIM** — Full email client backed by Stalwart over JMAP, with CalDAV/CardDAV contacts and calendars via SabreDAV. Zustand-managed frontend stores handle session, mailbox, email, and compose state.
+- **Mesh C&C** — Real-time dashboard for the WireGuard cluster. Each node heartbeats every 30 seconds to the primary, syncs full mesh state, and broadcasts updates live via Reverb.
+
+Every node's entry point follows the **`web.*` subdomain convention**: `web.kanary.org`, `web.motd.com`, `web.goldcoast.org` — one URL per node, resolved via mesh-local PowerDNS and gated by HTTP basic auth before you reach the login page.
 
 The UI uses a **Dual Carousel Sidebar (DCS)** layout — two independently navigable sliding panels flanking a central workspace, styled with glassmorphism:
 
