@@ -34,11 +34,15 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
 
-            $table->foreign('parent_id')->references('id')->on('mesh_tasks')->nullOnDelete();
             $table->index('status');
             $table->index('origin_node');
             $table->index('target_node');
             $table->index('parent_id');
+        });
+
+        // Self-referencing FK must be added after table creation for PostgreSQL
+        Schema::table('mesh_tasks', function (Blueprint $table) {
+            $table->foreign('parent_id')->references('id')->on('mesh_tasks')->nullOnDelete();
         });
     }
 
