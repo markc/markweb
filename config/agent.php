@@ -30,6 +30,8 @@ return [
             'o3-mini' => 'o3 Mini',
         ],
         'gemini' => [
+            'gemini-3.1-pro-preview' => 'Gemini 3.1 Pro',
+            'gemini-2.5-pro' => 'Gemini 2.5 Pro',
             'gemini-2.0-flash' => 'Gemini 2.0 Flash',
             'gemini-2.0-pro' => 'Gemini 2.0 Pro',
         ],
@@ -93,11 +95,13 @@ return [
 
     'pricing' => [
         'claude-sonnet-4-5-20250929' => [3.00, 15.00],
-        'claude-haiku-4-5-20251001' => [0.80, 4.00],
-        'claude-opus-4-6' => [15.00, 75.00],
+        'claude-haiku-4-5-20251001' => [1.00, 5.00],
+        'claude-opus-4-6' => [5.00, 25.00],
         'gpt-4o' => [2.50, 10.00],
         'gpt-4o-mini' => [0.15, 0.60],
         'o3-mini' => [1.10, 4.40],
+        'gemini-3.1-pro-preview' => [2.00, 12.00],
+        'gemini-2.5-pro' => [1.25, 10.00],
         'gemini-2.0-flash' => [0.10, 0.40],
         'gemini-2.0-pro' => [1.25, 10.00],
         'llama-3.3-70b-versatile' => [0.59, 0.79],
