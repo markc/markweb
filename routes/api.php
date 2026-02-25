@@ -34,4 +34,5 @@ Route::post('openclaw/push', [OpenClawPushController::class, 'push'])->name('ope
 
 // Mesh node routes
 Route::middleware(['web', 'auth'])->get('mesh/nodes', [MeshController::class, 'nodes'])->name('mesh.nodes');
+Route::get('mesh/sync', [MeshController::class, 'sync'])->name('mesh.sync');
 Route::post('mesh/heartbeat', [MeshController::class, 'heartbeat'])->name('mesh.heartbeat');

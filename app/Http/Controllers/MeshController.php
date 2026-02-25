@@ -20,6 +20,21 @@ class MeshController extends Controller
     }
 
     /**
+     * Sync endpoint — bearer token auth.
+     * Called by secondary nodes to pull full mesh state from primary.
+     */
+    public function sync(Request $request): JsonResponse
+    {
+        $token = config('services.system_event_token');
+
+        if (! $token || $request->bearerToken() !== $token) {
+            abort(401, 'Invalid token');
+        }
+
+        return response()->json(MeshNode::orderBy('name')->get());
+    }
+
+    /**
      * Heartbeat endpoint — bearer token auth.
      * Called by remote nodes over WireGuard.
      */

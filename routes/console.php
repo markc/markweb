@@ -34,6 +34,44 @@ Schedule::call(function () {
     broadcast(new MeshNodeUpdated($node));
 })->everyThirtySeconds()->name('mesh:self-heartbeat');
 
+// Mesh: sync state from primary (non-primary nodes pull full mesh state)
+Schedule::call(function () {
+    $primaryUrl = config('mesh.primary_url');
+
+    if (! $primaryUrl) {
+        return;
+    }
+
+    $token = config('services.system_event_token');
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::withToken($token)
+            ->timeout(10)
+            ->withoutVerifying()
+            ->get("{$primaryUrl}/api/mesh/sync");
+
+        if (! $response->successful()) {
+            return;
+        }
+
+        foreach ($response->json() as $data) {
+            $node = MeshNode::updateOrCreate(
+                ['name' => $data['name']],
+                [
+                    'wg_ip' => $data['wg_ip'],
+                    'status' => $data['status'],
+                    'last_heartbeat_at' => $data['last_heartbeat_at'],
+                    'meta' => $data['meta'],
+                ],
+            );
+
+            broadcast(new MeshNodeUpdated($node));
+        }
+    } catch (\Throwable) {
+        // Primary unreachable — keep local state as-is
+    }
+})->everyThirtySeconds()->name('mesh:sync-from-primary');
+
 // Mesh: mark nodes offline if no heartbeat in 90s
 Schedule::call(function () {
     $stale = MeshNode::where('status', 'online')
