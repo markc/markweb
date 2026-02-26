@@ -12,7 +12,7 @@ set -euo pipefail
 # Node config: SSH host, app path, vhost user
 declare -A NODE_APP NODE_USER
 NODE_APP[mko]="/srv/web.kanary.org/web/app"
-NODE_USER[mko]="markc"
+NODE_USER[mko]="u1001"
 NODE_APP[mmc]="/srv/web.motd.com/web/app"
 NODE_USER[mmc]="u1002"
 
