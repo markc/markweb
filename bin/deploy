@@ -1,12 +1,33 @@
 #!/usr/bin/env bash
-# Deploy markweb to production (mko)
-# Usage: bin/deploy [--skip-build]
+# Deploy markweb to mesh nodes
+# Usage: bin/deploy [node|all] [--skip-build]
+#   bin/deploy              # deploy to mko (default)
+#   bin/deploy mmc          # deploy to mmc
+#   bin/deploy all          # deploy to all remote nodes
+#   bin/deploy --skip-build # mko, skip frontend build
+#   bin/deploy mmc --skip-build
 
 set -euo pipefail
 
-REMOTE="markc@mko"
-APP="/srv/web.kanary.org/web/app"
-BUN='export PATH="$HOME/.bun/bin:$PATH"'
+# Node config: SSH host, app path, vhost user
+declare -A NODE_APP NODE_USER
+NODE_APP[mko]="/srv/web.kanary.org/web/app"
+NODE_USER[mko]="markc"
+NODE_APP[mmc]="/srv/web.motd.com/web/app"
+NODE_USER[mmc]="u1002"
+
+ALL_NODES=(mko mmc)
+
+# Parse arguments
+TARGET=""
+SKIP_BUILD=false
+for arg in "$@"; do
+    case "$arg" in
+        --skip-build) SKIP_BUILD=true ;;
+        *) TARGET="$arg" ;;
+    esac
+done
+TARGET="${TARGET:-mko}"
 
 # Check we're on main with a clean tree
 branch=$(git branch --show-current)
@@ -24,20 +45,39 @@ fi
 echo "==> Pushing to GitHub..."
 git push
 
-# Pull on server
-echo "==> Pulling on $REMOTE..."
-ssh "$REMOTE" "cd $APP && git pull"
+# Deploy to a single node
+deploy_node() {
+    local node="$1"
+    local app="${NODE_APP[$node]}"
+    local user="${NODE_USER[$node]}"
 
-# Rebuild frontend unless --skip-build
-if [[ "${1:-}" != "--skip-build" ]]; then
-    echo "==> Building frontend..."
-    ssh "$REMOTE" "$BUN && cd $APP && bun run build"
+    echo "==> [$node] Pulling as $user..."
+    ssh "$node" "sudo -u $user git -C $app pull"
+
+    if [[ "$SKIP_BUILD" == false ]]; then
+        echo "==> [$node] Building frontend..."
+        ssh "$node" "sudo -u $user bash -c 'export PATH=\"\$HOME/.bun/bin:\$PATH\" && cd $app && bun run build'"
+    else
+        echo "==> [$node] Skipping frontend build"
+    fi
+
+    echo "==> [$node] Clearing caches..."
+    ssh "$node" "cd $app && php artisan route:cache && php artisan config:cache"
+
+    echo "==> [$node] Done"
+}
+
+# Deploy
+if [[ "$TARGET" == "all" ]]; then
+    for node in "${ALL_NODES[@]}"; do
+        deploy_node "$node"
+    done
 else
-    echo "==> Skipping frontend build"
+    if [[ -z "${NODE_APP[$TARGET]+x}" ]]; then
+        echo "ERROR: unknown node '$TARGET' (known: ${ALL_NODES[*]})" >&2
+        exit 1
+    fi
+    deploy_node "$TARGET"
 fi
 
-# Clear caches
-echo "==> Clearing caches..."
-ssh "$REMOTE" "cd $APP && php artisan route:cache && php artisan config:cache"
-
-echo "==> Done"
+echo "==> Deploy complete"
