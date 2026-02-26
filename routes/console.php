@@ -25,9 +25,10 @@ Schedule::call(function () {
             'wg_ip' => $wgIp,
             'status' => 'online',
             'last_heartbeat_at' => now(),
-            'meta' => [
+            'meta' => array_filter([
                 'load' => trim(file_get_contents('/proc/loadavg') ?: ''),
-            ],
+                'url' => config('mesh.node_url'),
+            ]),
         ],
     );
 
