@@ -122,7 +122,7 @@ bin/deploy --skip-build # PHP-only changes: skip frontend rebuild
 
 **Critical:** Frontend is always built on the server — `VITE_REVERB_*` env vars get baked into JS at build time. Building locally bakes `localhost` values.
 
-The script enforces clean main branch before deploying. SSH deploys as `u1001@mko` (not root) to avoid ownership issues.
+The script enforces clean main branch before deploying. SSH connects as root (via host alias), then `sudo -u u1002` for git/build operations to match vhost ownership.
 
 ## Mesh Deployment
 
