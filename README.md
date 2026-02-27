@@ -108,9 +108,10 @@ markweb runs as a replicated instance across multiple nodes. Each node has its o
 
 | Node | URL | WireGuard IP | Role |
 |------|-----|-------------|------|
-| mko | `web.kanary.org` | 172.16.1.210 | Production primary |
-| mmc | `web.motd.com` | 172.16.1.9 | Production node |
-| cachyos | `web.goldcoast.org` | — | Dev workstation |
+| mko | `web.kanary.org` | 172.16.2.210 | Production primary |
+| mmc | `web.motd.com` | 172.16.2.9 | Production node |
+| gc | `web.goldcoast.org` | 172.16.2.4 | Dev mesh node (Incus CT) |
+| cachyos | — | 172.16.2.5 | Admin access (host) |
 
 ### How it works
 
