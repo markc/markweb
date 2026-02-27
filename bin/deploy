@@ -3,20 +3,26 @@
 # Usage: bin/deploy [node|all] [--skip-build]
 #   bin/deploy              # deploy to mko (default)
 #   bin/deploy mmc          # deploy to mmc
-#   bin/deploy all          # deploy to all remote nodes
+#   bin/deploy gc           # deploy to gc (local Incus CT)
+#   bin/deploy all          # deploy to all nodes
 #   bin/deploy --skip-build # mko, skip frontend build
-#   bin/deploy mmc --skip-build
+#   bin/deploy gc --skip-build
 
 set -euo pipefail
 
-# Node config: SSH host, app path, vhost user
-declare -A NODE_APP NODE_USER
+# Node config: SSH host, app path, vhost user, SSH target
+declare -A NODE_APP NODE_USER NODE_SSH
 NODE_APP[mko]="/srv/web.kanary.org/web/app"
 NODE_USER[mko]="u1002"
+NODE_SSH[mko]="mko"
 NODE_APP[mmc]="/srv/web.motd.com/web/app"
 NODE_USER[mmc]="u1002"
+NODE_SSH[mmc]="mmc"
+NODE_APP[gc]="/srv/web.goldcoast.org/web/app"
+NODE_USER[gc]="u1002"
+NODE_SSH[gc]="10.11.0.2"
 
-ALL_NODES=(mko mmc)
+ALL_NODES=(mko mmc gc)
 
 # Parse arguments
 TARGET=""
@@ -50,19 +56,20 @@ deploy_node() {
     local node="$1"
     local app="${NODE_APP[$node]}"
     local user="${NODE_USER[$node]}"
+    local host="${NODE_SSH[$node]}"
 
     echo "==> [$node] Pulling as $user..."
-    ssh "$node" "sudo -u $user git -C $app pull"
+    ssh "$host" "sudo -u $user git -C $app pull"
 
     if [[ "$SKIP_BUILD" == false ]]; then
         echo "==> [$node] Building frontend..."
-        ssh "$node" "sudo -u $user bash -c 'export PATH=\"\$HOME/.bun/bin:\$PATH\" && cd $app && bun run build'"
+        ssh "$host" "sudo -u $user bash -c 'export PATH=\"\$HOME/.bun/bin:\$PATH\" && cd $app && bun run build'"
     else
         echo "==> [$node] Skipping frontend build"
     fi
 
     echo "==> [$node] Clearing caches..."
-    ssh "$node" "cd $app && php artisan route:cache && php artisan config:cache"
+    ssh "$host" "sudo -u $user php $app/artisan route:cache && sudo -u $user php $app/artisan config:cache"
 
     echo "==> [$node] Done"
 }
