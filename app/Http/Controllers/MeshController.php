@@ -62,7 +62,9 @@ class MeshController extends Controller
             ],
         );
 
-        broadcast(new MeshNodeUpdated($node));
+        if ($node->wasRecentlyCreated || $node->wasChanged(['status', 'wg_ip'])) {
+            broadcast(new MeshNodeUpdated($node));
+        }
 
         return response()->json($node, 200);
     }
