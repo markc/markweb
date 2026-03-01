@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
-import { FileAudio, Loader2, Mic, RefreshCw, Sparkles, Volume2 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { FileAudio, Loader2, Mic, Play, RefreshCw, Sparkles, Square, Volume2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const csrf = () => document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
 
@@ -19,6 +19,8 @@ export default function TtsStudio() {
     const [selectedVoice, setSelectedVoice] = useState('');
     const [generating, setGenerating] = useState(false);
     const [ttsResult, setTtsResult] = useState<string | null>(null);
+    const [playing, setPlaying] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Tutorial script form
     const [topic, setTopic] = useState('');
@@ -35,12 +37,14 @@ export default function TtsStudio() {
             });
             const data = await res.json();
             if (data.success && data.result) {
-                // Parse voices from result string
-                const lines = data.result.split('\n').filter((l: string) => l.trim());
-                const parsed = lines.map((l: string) => {
-                    const parts = l.split(/\s+-\s+/);
-                    return { name: parts[0]?.trim() ?? l.trim(), language: parts[1]?.trim() };
-                });
+                // Result format: "Voices: Kore (clear female), Charon (deep male), ...\n\nTest at: ..."
+                const voiceLine = data.result.split('\n')[0].replace(/^Voices:\s*/, '');
+                const parsed = voiceLine.split(',').map((v: string) => {
+                    const match = v.trim().match(/^(\w+)\s*(?:\(([^)]+)\))?$/);
+                    return match
+                        ? { name: match[1], language: match[2] }
+                        : { name: v.trim() };
+                }).filter((v: Voice) => v.name);
                 setVoices(parsed);
             }
         } catch { /* ignore */ }
@@ -71,6 +75,24 @@ export default function TtsStudio() {
         }
         setGenerating(false);
     }, [text, selectedVoice]);
+
+    const audioFile = ttsResult?.startsWith('Audio: ') ? ttsResult.slice(7).split('/').pop() : null;
+
+    const handlePlayStop = useCallback(() => {
+        if (playing && audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            setPlaying(false);
+            return;
+        }
+        if (!audioFile) return;
+        const audio = new Audio(`/api/appmesh/tts/play?file=${encodeURIComponent(audioFile)}`);
+        audioRef.current = audio;
+        audio.onended = () => setPlaying(false);
+        audio.onerror = () => setPlaying(false);
+        audio.play();
+        setPlaying(true);
+    }, [playing, audioFile]);
 
     const handleScriptGenerate = useCallback(async () => {
         if (!topic.trim()) return;
@@ -161,24 +183,39 @@ export default function TtsStudio() {
                             </div>
                         </div>
 
-                        <button
-                            onClick={handleGenerate}
-                            disabled={generating || !text.trim()}
-                            className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--scheme-accent)' }}
-                        >
-                            {generating ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Generating...
-                                </>
-                            ) : (
-                                <>
-                                    <Mic className="h-4 w-4" />
-                                    Generate Speech
-                                </>
-                            )}
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleGenerate}
+                                disabled={generating || !text.trim()}
+                                className="flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
+                                style={{ backgroundColor: 'var(--scheme-accent)' }}
+                            >
+                                {generating ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Mic className="h-4 w-4" />
+                                        Generate Speech
+                                    </>
+                                )}
+                            </button>
+                            <button
+                                onClick={handlePlayStop}
+                                disabled={!audioFile}
+                                className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+                                style={{
+                                    backgroundColor: playing ? 'var(--scheme-accent)' : 'transparent',
+                                    color: playing ? 'white' : 'var(--scheme-accent)',
+                                    border: `1px solid var(--scheme-accent)`,
+                                }}
+                            >
+                                {playing ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                {playing ? 'Stop' : 'Play'}
+                            </button>
+                        </div>
 
                         {ttsResult && (
                             <div className="rounded-lg p-3" style={{ backgroundColor: 'var(--scheme-bg-secondary)' }}>

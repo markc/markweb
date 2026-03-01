@@ -18,6 +18,19 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('jmap/blob/{blobId}/{name}', [\App\Http\Controllers\JmapAttachmentController::class, 'download'])->name('jmap.blob.download');
     Route::post('jmap/blob/upload', [\App\Http\Controllers\JmapAttachmentController::class, 'upload'])->name('jmap.blob.upload');
 
+    // AppMesh API routes
+    Route::get('appmesh/tools', [\App\Http\Controllers\AppMeshController::class, 'tools'])->name('appmesh.tools');
+    Route::post('appmesh/execute', [\App\Http\Controllers\AppMeshController::class, 'execute'])->name('appmesh.execute');
+    Route::post('appmesh/port', [\App\Http\Controllers\AppMeshController::class, 'portExecute'])->name('appmesh.port');
+    Route::get('appmesh/dbus/services', [\App\Http\Controllers\AppMeshController::class, 'dbusServices'])->name('appmesh.dbus.services');
+    Route::post('appmesh/dbus/introspect', [\App\Http\Controllers\AppMeshController::class, 'dbusIntrospect'])->name('appmesh.dbus.introspect');
+    Route::get('appmesh/midi/ports', [\App\Http\Controllers\AppMeshController::class, 'midiPorts'])->name('appmesh.midi.ports');
+    Route::post('appmesh/midi/connect', [\App\Http\Controllers\AppMeshController::class, 'midiConnect'])->name('appmesh.midi.connect');
+    Route::get('appmesh/tts/voices', [\App\Http\Controllers\AppMeshController::class, 'ttsVoices'])->name('appmesh.tts.voices');
+    Route::post('appmesh/tts/generate', [\App\Http\Controllers\AppMeshController::class, 'ttsGenerate'])->name('appmesh.tts.generate');
+    Route::get('appmesh/tts/play', [\App\Http\Controllers\AppMeshController::class, 'ttsPlay'])->name('appmesh.tts.play');
+    Route::post('appmesh/tts/tutorial', [\App\Http\Controllers\AppMeshController::class, 'tutorialScript'])->name('appmesh.tts.tutorial');
+
     // System events (notifications) — browser auth
     Route::get('system-events', [SystemEventController::class, 'index']);
     Route::post('system-events', [SystemEventController::class, 'store']);
