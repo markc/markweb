@@ -9,6 +9,8 @@ import MailboxesPanel from '@/components/panels/l4-mailboxes-panel';
 import ThemePanel from '@/components/panels/r1-theme-panel';
 import UsagePanel from '@/components/panels/r2-usage-panel';
 import NotificationsPanel from '@/components/panels/r3-notifications-panel';
+import AppmeshPanel from '@/components/panels/l5-appmesh-panel';
+import AppmeshEventsPanel from '@/components/panels/r4-appmesh-events-panel';
 import TopNav from '@/components/top-nav';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
 
@@ -17,11 +19,13 @@ const leftPanels = [
     { label: 'L2: Conversations', content: <ConversationsPanel /> },
     { label: 'L3: Docs', content: <DocsPanel /> },
     { label: 'L4: Mailboxes', content: <MailboxesPanel /> },
+    { label: 'L5: AppMesh', content: <AppmeshPanel /> },
 ];
 const rightPanels = [
     { label: 'R1: Theme', content: <ThemePanel /> },
     { label: 'R2: Usage', content: <UsagePanel /> },
     { label: 'R3: Notifications', content: <NotificationsPanel /> },
+    { label: 'R4: Events', content: <AppmeshEventsPanel /> },
 ];
 
 function LayoutContent({ children }: { children: ReactNode }) {

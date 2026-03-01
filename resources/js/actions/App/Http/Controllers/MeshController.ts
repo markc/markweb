@@ -81,8 +81,89 @@ nodesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 nodes.form = nodesForm
 
 /**
-* @see \App\Http\Controllers\MeshController::heartbeat
+* @see \App\Http\Controllers\MeshController::sync
 * @see app/Http/Controllers/MeshController.php:26
+* @route '/api/mesh/sync'
+*/
+export const sync = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sync.url(options),
+    method: 'get',
+})
+
+sync.definition = {
+    methods: ["get","head"],
+    url: '/api/mesh/sync',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\MeshController::sync
+* @see app/Http/Controllers/MeshController.php:26
+* @route '/api/mesh/sync'
+*/
+sync.url = (options?: RouteQueryOptions) => {
+    return sync.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\MeshController::sync
+* @see app/Http/Controllers/MeshController.php:26
+* @route '/api/mesh/sync'
+*/
+sync.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sync.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MeshController::sync
+* @see app/Http/Controllers/MeshController.php:26
+* @route '/api/mesh/sync'
+*/
+sync.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: sync.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\MeshController::sync
+* @see app/Http/Controllers/MeshController.php:26
+* @route '/api/mesh/sync'
+*/
+const syncForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: sync.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MeshController::sync
+* @see app/Http/Controllers/MeshController.php:26
+* @route '/api/mesh/sync'
+*/
+syncForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: sync.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MeshController::sync
+* @see app/Http/Controllers/MeshController.php:26
+* @route '/api/mesh/sync'
+*/
+syncForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: sync.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+sync.form = syncForm
+
+/**
+* @see \App\Http\Controllers\MeshController::heartbeat
+* @see app/Http/Controllers/MeshController.php:41
 * @route '/api/mesh/heartbeat'
 */
 export const heartbeat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +178,7 @@ heartbeat.definition = {
 
 /**
 * @see \App\Http\Controllers\MeshController::heartbeat
-* @see app/Http/Controllers/MeshController.php:26
+* @see app/Http/Controllers/MeshController.php:41
 * @route '/api/mesh/heartbeat'
 */
 heartbeat.url = (options?: RouteQueryOptions) => {
@@ -106,7 +187,7 @@ heartbeat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MeshController::heartbeat
-* @see app/Http/Controllers/MeshController.php:26
+* @see app/Http/Controllers/MeshController.php:41
 * @route '/api/mesh/heartbeat'
 */
 heartbeat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +197,7 @@ heartbeat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\MeshController::heartbeat
-* @see app/Http/Controllers/MeshController.php:26
+* @see app/Http/Controllers/MeshController.php:41
 * @route '/api/mesh/heartbeat'
 */
 const heartbeatForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +207,7 @@ const heartbeatForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\MeshController::heartbeat
-* @see app/Http/Controllers/MeshController.php:26
+* @see app/Http/Controllers/MeshController.php:41
 * @route '/api/mesh/heartbeat'
 */
 heartbeatForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -136,6 +217,6 @@ heartbeatForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> 
 
 heartbeat.form = heartbeatForm
 
-const MeshController = { nodes, heartbeat }
+const MeshController = { nodes, sync, heartbeat }
 
 export default MeshController

@@ -1,9 +1,11 @@
 import FileLinkController from './FileLinkController'
 import JmapAuthController from './JmapAuthController'
 import JmapAttachmentController from './JmapAttachmentController'
+import AppMeshController from './AppMeshController'
 import SystemEventController from './SystemEventController'
 import OpenClawPushController from './OpenClawPushController'
 import MeshController from './MeshController'
+import MeshTaskController from './MeshTaskController'
 import DashboardController from './DashboardController'
 import Agent from './Agent'
 import ChatController from './ChatController'
@@ -16,6 +18,7 @@ import CalendarController from './CalendarController'
 import EventController from './EventController'
 import AddressBookController from './AddressBookController'
 import ContactController from './ContactController'
+import AgentCardController from './AgentCardController'
 import ShareController from './ShareController'
 import Settings from './Settings'
 import DavController from './DavController'
@@ -24,9 +27,11 @@ const Controllers = {
     FileLinkController: Object.assign(FileLinkController, FileLinkController),
     JmapAuthController: Object.assign(JmapAuthController, JmapAuthController),
     JmapAttachmentController: Object.assign(JmapAttachmentController, JmapAttachmentController),
+    AppMeshController: Object.assign(AppMeshController, AppMeshController),
     SystemEventController: Object.assign(SystemEventController, SystemEventController),
     OpenClawPushController: Object.assign(OpenClawPushController, OpenClawPushController),
     MeshController: Object.assign(MeshController, MeshController),
+    MeshTaskController: Object.assign(MeshTaskController, MeshTaskController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     Agent: Object.assign(Agent, Agent),
     ChatController: Object.assign(ChatController, ChatController),
@@ -39,6 +44,7 @@ const Controllers = {
     EventController: Object.assign(EventController, EventController),
     AddressBookController: Object.assign(AddressBookController, AddressBookController),
     ContactController: Object.assign(ContactController, ContactController),
+    AgentCardController: Object.assign(AgentCardController, AgentCardController),
     ShareController: Object.assign(ShareController, ShareController),
     Settings: Object.assign(Settings, Settings),
     DavController: Object.assign(DavController, DavController),

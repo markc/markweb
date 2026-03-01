@@ -177,7 +177,7 @@ class AppMeshService
         }
         PHP;
 
-        $result = Process::timeout(30)->env($this->processEnv())->run([
+        $result = Process::timeout(120)->env($this->processEnv())->run([
             'php', '-r', $script, $this->projectRoot, $toolName, $argsJson,
         ]);
 

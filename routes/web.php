@@ -45,6 +45,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('mail', [App\Http\Controllers\MailController::class, 'index'])->name('mail.index');
 
+    // AppMesh routes
+    Route::get('appmesh', [App\Http\Controllers\AppMeshController::class, 'index'])->name('appmesh.index');
+    Route::get('appmesh/explore', [App\Http\Controllers\AppMeshController::class, 'explore'])->name('appmesh.explore');
+    Route::get('appmesh/midi', [App\Http\Controllers\AppMeshController::class, 'midi'])->name('appmesh.midi');
+    Route::get('appmesh/tts', [App\Http\Controllers\AppMeshController::class, 'tts'])->name('appmesh.tts');
+
     Route::get('shared-files', [App\Http\Controllers\SharedFileController::class, 'index'])->name('shared-files.index');
     Route::delete('shared-files/{sharedFile}', [App\Http\Controllers\SharedFileController::class, 'destroy'])->name('shared-files.destroy');
 

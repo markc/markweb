@@ -40,7 +40,7 @@ const defaults: ThemeState = {
 };
 
 function clampPanel(n: number): number {
-    return Math.max(0, Math.min(4, n));
+    return Math.max(0, Math.min(5, n));
 }
 
 function loadState(): ThemeState {

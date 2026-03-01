@@ -21,3 +21,13 @@ Broadcast::channel('chat.session.web.{userId}.{uuid}', function ($user, $userId)
 Broadcast::channel('mesh', function ($user) {
     return $user !== null;
 });
+
+// AppMesh tool execution events — per user
+Broadcast::channel('appmesh.user.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
+// AppMesh live desktop events — any authenticated user on this node
+Broadcast::channel('appmesh.events', function ($user) {
+    return $user !== null;
+});
