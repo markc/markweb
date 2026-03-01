@@ -32,7 +32,9 @@ Schedule::call(function () {
         ],
     );
 
-    broadcast(new MeshNodeUpdated($node));
+    if ($node->wasRecentlyCreated || $node->wasChanged(['status', 'wg_ip'])) {
+        broadcast(new MeshNodeUpdated($node));
+    }
 })->everyThirtySeconds()->name('mesh:self-heartbeat');
 
 // Mesh: sync state from primary (non-primary nodes pull full mesh state)
@@ -66,7 +68,9 @@ Schedule::call(function () {
                 ],
             );
 
-            broadcast(new MeshNodeUpdated($node));
+            if ($node->wasRecentlyCreated || $node->wasChanged(['status', 'wg_ip'])) {
+                broadcast(new MeshNodeUpdated($node));
+            }
         }
     } catch (\Throwable) {
         // Primary unreachable — keep local state as-is

@@ -20,7 +20,7 @@ NODE_USER[mmc]="u1002"
 NODE_SSH[mmc]="mmc"
 NODE_APP[gc]="/srv/web.goldcoast.org/web/app"
 NODE_USER[gc]="u1002"
-NODE_SSH[gc]="10.11.0.2"
+NODE_SSH[gc]="gcwg"
 
 ALL_NODES=(mko mmc gc)
 
