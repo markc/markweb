@@ -185,13 +185,17 @@ class AppMeshController extends Controller
             'output' => 'nullable|string',
         ]);
 
-        $result = $this->appMesh->executeTool('appmesh_tts', $validated);
+        try {
+            $result = $this->appMesh->executeTool('appmesh_tts', $validated);
+        } catch (\Throwable $e) {
+            $result = ['success' => false, 'error' => $e->getMessage()];
+        }
 
         return response()->json($result);
     }
 
     /**
-     * API: Stream a TTS audio file for playback.
+     * API: Stream a TTS audio/video file for playback.
      */
     public function ttsPlay(Request $request): BinaryFileResponse
     {
@@ -205,7 +209,9 @@ class AppMeshController extends Controller
 
         abort_unless(file_exists($path), 404);
 
-        return response()->file($path, ['Content-Type' => 'audio/wav']);
+        $mime = str_ends_with($filename, '.mp4') ? 'video/mp4' : 'audio/wav';
+
+        return response()->file($path, ['Content-Type' => $mime]);
     }
 
     /**
@@ -220,6 +226,66 @@ class AppMeshController extends Controller
         ]);
 
         $result = $this->appMesh->executeTool('appmesh_tutorial_script', $validated);
+
+        return response()->json($result);
+    }
+
+    /**
+     * API: One-shot tutorial — generate script + audio in one call.
+     */
+    public function tutorialFull(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'topic' => 'required|string|max:500',
+            'voice' => 'nullable|string',
+            'style' => 'nullable|string',
+        ]);
+
+        try {
+            $result = $this->appMesh->executeTool('appmesh_tutorial_full', $validated);
+        } catch (\Throwable $e) {
+            $result = ['success' => false, 'error' => $e->getMessage()];
+        }
+
+        return response()->json($result);
+    }
+
+    /**
+     * API: Screen recording — start, stop, or check status.
+     */
+    public function screenRecord(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'action' => 'required|in:start,stop,status',
+        ]);
+
+        try {
+            $result = $this->appMesh->executeTool('appmesh_screen_record', $validated);
+        } catch (\Throwable $e) {
+            $result = ['success' => false, 'error' => $e->getMessage()];
+        }
+
+        return response()->json($result);
+    }
+
+    /**
+     * API: Combine video + audio into final MP4.
+     */
+    public function videoCombine(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'video' => 'required|string',
+            'audio' => 'required|string',
+        ]);
+
+        try {
+            $result = $this->appMesh->executeTool('appmesh_video_combine', [
+                'video' => basename($validated['video']),
+                'audio' => basename($validated['audio']),
+            ]);
+        } catch (\Throwable $e) {
+            $result = ['success' => false, 'error' => $e->getMessage()];
+        }
 
         return response()->json($result);
     }

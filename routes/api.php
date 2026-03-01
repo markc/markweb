@@ -30,6 +30,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('appmesh/tts/generate', [\App\Http\Controllers\AppMeshController::class, 'ttsGenerate'])->name('appmesh.tts.generate');
     Route::get('appmesh/tts/play', [\App\Http\Controllers\AppMeshController::class, 'ttsPlay'])->name('appmesh.tts.play');
     Route::post('appmesh/tts/tutorial', [\App\Http\Controllers\AppMeshController::class, 'tutorialScript'])->name('appmesh.tts.tutorial');
+    Route::post('appmesh/tts/tutorial-full', [\App\Http\Controllers\AppMeshController::class, 'tutorialFull'])->name('appmesh.tts.tutorial-full');
+    Route::post('appmesh/tts/record', [\App\Http\Controllers\AppMeshController::class, 'screenRecord'])->name('appmesh.tts.record');
+    Route::post('appmesh/tts/combine', [\App\Http\Controllers\AppMeshController::class, 'videoCombine'])->name('appmesh.tts.combine');
 
     // System events (notifications) — browser auth
     Route::get('system-events', [SystemEventController::class, 'index']);
