@@ -23,6 +23,11 @@ class AppMeshService
         $this->projectRoot = $root && is_dir($root) ? realpath($root) : null;
     }
 
+    private function processEnv(): array
+    {
+        return ['HOME' => getenv('HOME') ?: posix_getpwuid(posix_getuid())['dir']];
+    }
+
     /**
      * Check if AppMesh is available on this node.
      */
@@ -90,7 +95,7 @@ class AppMeshService
         echo json_encode($result);
         PHP;
 
-        $result = Process::run([
+        $result = Process::env($this->processEnv())->run([
             'php', '-r', $script, $this->projectRoot,
         ]);
 
@@ -172,7 +177,7 @@ class AppMeshService
         }
         PHP;
 
-        $result = Process::timeout(30)->run([
+        $result = Process::timeout(30)->env($this->processEnv())->run([
             'php', '-r', $script, $this->projectRoot, $toolName, $argsJson,
         ]);
 
@@ -211,7 +216,7 @@ class AppMeshService
         }
         PHP;
 
-        $result = Process::timeout(10)->run([
+        $result = Process::timeout(10)->env($this->processEnv())->run([
             'php', '-r', $script, $this->projectRoot, $port, $command, $argsJson,
         ]);
 
