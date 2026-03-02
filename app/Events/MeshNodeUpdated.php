@@ -20,6 +20,11 @@ class MeshNodeUpdated implements ShouldBroadcast
         public readonly MeshNode $meshNode,
     ) {}
 
+    public function broadcastAs(): string
+    {
+        return 'MeshNodeUpdated';
+    }
+
     /**
      * @return array<int, Channel>
      */

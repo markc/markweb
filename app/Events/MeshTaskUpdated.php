@@ -20,6 +20,11 @@ class MeshTaskUpdated implements ShouldBroadcast
         public readonly MeshTask $meshTask,
     ) {}
 
+    public function broadcastAs(): string
+    {
+        return 'MeshTaskUpdated';
+    }
+
     /**
      * @return array<int, Channel>
      */
