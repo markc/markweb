@@ -2,7 +2,7 @@
 
 > How markweb + AppMesh form a programmable, self-healing mesh of nodes where humans, machines, and AI agents are all first-class participants.
 
-This document captures the design philosophy, architectural decisions, and lessons learned from building the markweb mesh. It complements the [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/AMP-AppMesh-Protocol-Specification.md) which defines the wire format and port addressing. This guide covers the *why* — the AMP spec covers the *what*.
+This document captures the design philosophy, architectural decisions, and lessons learned from building the markweb mesh. It complements the [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/_doc/2026-02-28-amp-protocol-specification.md) which defines the wire format and port addressing. This guide covers the *why* — the AMP spec covers the *what*.
 
 ---
 
@@ -266,7 +266,7 @@ Persistent WebSocket connections make failure detection a property of the transp
 
 ## 7. The AMP Wire Format
 
-AMP messages use markdown frontmatter as the wire format — `---` delimited headers with an optional freeform body. The full specification lives in the [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/AMP-AppMesh-Protocol-Specification.md). Key properties:
+AMP messages use markdown frontmatter as the wire format — `---` delimited headers with an optional freeform body. The full specification lives in the [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/_doc/2026-02-28-amp-protocol-specification.md). Key properties:
 
 - **One parser, three message shapes** — full (headers + markdown body), command (headers only), data (minimal `json:` header). Parsed identically.
 - **8 bytes minimum** — the empty message (`---\n---\n`) serves as heartbeat, ACK, NOP.
@@ -400,7 +400,7 @@ Agents connect to the mesh as first-class nodes, reading and writing AMP message
 
 ## Related Documents
 
-- [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/AMP-AppMesh-Protocol-Specification.md) — wire format, port addressing, header fields, parser implementations
+- [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/_doc/2026-02-28-amp-protocol-specification.md) — wire format, port addressing, header fields, parser implementations
 - [architecture](2026-02-24-architecture.md) — markweb application internals (services, models, data flows)
 - [deploy](2026-02-24-deploy.md) — deployment workflow and node configuration
 - [CLAUDE.md](../CLAUDE.md) — project conventions, commands, and environment
