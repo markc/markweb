@@ -12,6 +12,31 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+// Mesh: self-heartbeat — report this node's identity and load
+Schedule::call(function () {
+    $name = config('mesh.node_name');
+    $wgIp = config('mesh.node_wg_ip');
+
+    if (! $name) {
+        return;
+    }
+
+    $node = MeshNode::updateOrCreate(
+        ['name' => $name],
+        [
+            'wg_ip' => $wgIp,
+            'status' => 'online',
+            'last_heartbeat_at' => now(),
+            'meta' => array_filter([
+                'load' => trim(@file_get_contents('/proc/loadavg') ?: ''),
+                'url' => config('mesh.node_url'),
+            ]),
+        ],
+    );
+
+    broadcast(new MeshNodeUpdated($node));
+})->everyMinute()->name('mesh:self-heartbeat');
+
 // Mesh: sync node state from meshd (fallback if callbacks are missed)
 Schedule::call(function () {
     $bridge = app(MeshBridgeService::class);
