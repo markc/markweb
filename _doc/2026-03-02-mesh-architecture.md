@@ -1,8 +1,15 @@
-# Mesh Architecture — Design Guide
+# NodeMesh — Architecture & Design Guide
 
-> How markweb + AppMesh form a programmable, self-healing mesh of nodes where humans, machines, and AI agents are all first-class participants.
+> A programmable, self-healing mesh of nodes where humans, machines, and AI agents are all first-class participants.
 
-This document captures the design philosophy, architectural decisions, and lessons learned from building the markweb mesh. It complements the [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/_doc/2026-02-28-amp-protocol-specification.md) which defines the wire format and port addressing. This guide covers the *why* — the AMP spec covers the *what*.
+**NodeMesh** is the umbrella project unifying two components:
+
+- **appmesh** — desktop node automation (Rust, QML, D-Bus, KDE integration)
+- **markweb** ("markdown web") — headless server nodes (Laravel, WebSocket, WireGuard)
+
+Each can operate independently. Together they form a mesh where desktop apps, server services, browser tabs, and AI agents are all scriptable nodes speaking the same protocol.
+
+This document captures the design philosophy, architectural decisions, and lessons learned. It complements the [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/_doc/2026-02-28-amp-protocol-specification.md) which defines the wire format and port addressing. This guide covers the *why* — the AMP spec covers the *what*.
 
 ---
 
@@ -10,7 +17,7 @@ This document captures the design philosophy, architectural decisions, and lesso
 
 A personal mesh of cooperating programs, inspired by the Amiga's ARexx. On the Amiga, every serious application exposed a named port. A three-line script could orchestrate a paint program, a word processor, and a file manager. No APIs, no SDKs — just send commands to named ports in a common language.
 
-markweb + AppMesh recreates this for modern Linux desktops, extended across machines over WireGuard and into browsers over WebSocket. The end goal:
+NodeMesh recreates this for modern Linux desktops, extended across machines over WireGuard and into browsers over WebSocket. The end goal:
 
 - Any application on any node, scriptable from PHP
 - Any browser can address any port on any node
