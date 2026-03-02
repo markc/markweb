@@ -6,6 +6,8 @@ return [
     'primary_url' => env('MESH_PRIMARY_URL'),
     'node_url' => env('MESH_NODE_URL'),
 
+    'meshd_socket' => env('MESHD_SOCKET_PATH', '/run/meshd/meshd.sock'),
+
     'agent_card' => [
         'description' => env('MESH_AGENT_DESCRIPTION', 'markweb mesh agent node'),
     ],

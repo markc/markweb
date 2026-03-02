@@ -1,6 +1,62 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import task from './task'
 /**
+* @see \App\Http\Controllers\MeshInboundController::inbound
+* @see app/Http/Controllers/MeshInboundController.php:26
+* @route '/api/mesh/inbound'
+*/
+export const inbound = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: inbound.url(options),
+    method: 'post',
+})
+
+inbound.definition = {
+    methods: ["post"],
+    url: '/api/mesh/inbound',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\MeshInboundController::inbound
+* @see app/Http/Controllers/MeshInboundController.php:26
+* @route '/api/mesh/inbound'
+*/
+inbound.url = (options?: RouteQueryOptions) => {
+    return inbound.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\MeshInboundController::inbound
+* @see app/Http/Controllers/MeshInboundController.php:26
+* @route '/api/mesh/inbound'
+*/
+inbound.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: inbound.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\MeshInboundController::inbound
+* @see app/Http/Controllers/MeshInboundController.php:26
+* @route '/api/mesh/inbound'
+*/
+const inboundForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: inbound.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\MeshInboundController::inbound
+* @see app/Http/Controllers/MeshInboundController.php:26
+* @route '/api/mesh/inbound'
+*/
+inboundForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: inbound.url(options),
+    method: 'post',
+})
+
+inbound.form = inboundForm
+
+/**
 * @see \App\Http\Controllers\MeshController::nodes
 * @see app/Http/Controllers/MeshController.php:17
 * @route '/api/mesh/nodes'
@@ -300,6 +356,7 @@ tasksForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 tasks.form = tasksForm
 
 const mesh = {
+    inbound: Object.assign(inbound, inbound),
     nodes: Object.assign(nodes, nodes),
     sync: Object.assign(sync, sync),
     heartbeat: Object.assign(heartbeat, heartbeat),

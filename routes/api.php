@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FileLinkController;
 use App\Http\Controllers\MeshController;
+use App\Http\Controllers\MeshInboundController;
 use App\Http\Controllers\MeshTaskController;
 use App\Http\Controllers\OpenClawPushController;
 use App\Http\Controllers\SystemEventController;
@@ -48,6 +49,11 @@ Route::post('system-events/push', [SystemEventController::class, 'push'])->name(
 
 // OpenClaw async push — external bearer token auth
 Route::post('openclaw/push', [OpenClawPushController::class, 'push'])->name('openclaw.push');
+
+// Mesh inbound — meshd localhost callback
+Route::post('mesh/inbound', [MeshInboundController::class, 'receive'])
+    ->middleware('mesh.local')
+    ->name('mesh.inbound');
 
 // Mesh node routes
 Route::middleware(['web', 'auth'])->get('mesh/nodes', [MeshController::class, 'nodes'])->name('mesh.nodes');

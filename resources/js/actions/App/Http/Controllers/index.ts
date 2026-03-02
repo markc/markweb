@@ -4,6 +4,7 @@ import JmapAttachmentController from './JmapAttachmentController'
 import AppMeshController from './AppMeshController'
 import SystemEventController from './SystemEventController'
 import OpenClawPushController from './OpenClawPushController'
+import MeshInboundController from './MeshInboundController'
 import MeshController from './MeshController'
 import MeshTaskController from './MeshTaskController'
 import DashboardController from './DashboardController'
@@ -30,6 +31,7 @@ const Controllers = {
     AppMeshController: Object.assign(AppMeshController, AppMeshController),
     SystemEventController: Object.assign(SystemEventController, SystemEventController),
     OpenClawPushController: Object.assign(OpenClawPushController, OpenClawPushController),
+    MeshInboundController: Object.assign(MeshInboundController, MeshInboundController),
     MeshController: Object.assign(MeshController, MeshController),
     MeshTaskController: Object.assign(MeshTaskController, MeshTaskController),
     DashboardController: Object.assign(DashboardController, DashboardController),
