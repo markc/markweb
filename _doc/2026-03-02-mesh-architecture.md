@@ -401,6 +401,6 @@ Agents connect to the mesh as first-class nodes, reading and writing AMP message
 ## Related Documents
 
 - [AMP Protocol Specification](https://github.com/markc/appmesh/blob/main/AMP-AppMesh-Protocol-Specification.md) — wire format, port addressing, header fields, parser implementations
-- [architecture.md](architecture.md) — markweb application internals (services, models, data flows)
-- [deploy.md](deploy.md) — deployment workflow and node configuration
+- [architecture](2026-02-24-architecture.md) — markweb application internals (services, models, data flows)
+- [deploy](2026-02-24-deploy.md) — deployment workflow and node configuration
 - [CLAUDE.md](../CLAUDE.md) — project conventions, commands, and environment
