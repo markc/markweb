@@ -67,7 +67,7 @@ Schedule::call(function () {
             // meshd not running or send failed — silent
         }
     }
-})->everyFifteenSeconds()->name('mesh:self-heartbeat');
+})->everySecond()->name('mesh:self-heartbeat');
 
 // Mesh: sync node state from meshd (fallback if callbacks are missed)
 Schedule::call(function () {
