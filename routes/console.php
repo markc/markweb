@@ -36,24 +36,35 @@ Schedule::call(function () {
 
     broadcast(new MeshNodeUpdated($cache->get($name)));
 
-    // Send heartbeat through meshd so peers update their Redis too
+    // Send heartbeat to each peer via meshd (unicast — no broadcast in meshd yet)
     $bridge = app(MeshBridgeService::class);
     if ($bridge->isAvailable()) {
+        $args = json_encode(array_filter([
+            'name' => $name,
+            'wg_ip' => $wgIp,
+            'load' => $load,
+            'url' => $url,
+        ]));
+
         try {
-            $bridge->send(new AmpMessage([
-                'amp' => '1',
-                'type' => 'event',
-                'from' => "markweb.{$name}.amp",
-                'command' => 'heartbeat',
-                'args' => json_encode(array_filter([
-                    'name' => $name,
-                    'wg_ip' => $wgIp,
-                    'load' => $load,
-                    'url' => $url,
-                ])),
-            ]));
+            $status = $bridge->status();
+            foreach ($status['peers'] ?? [] as $peer) {
+                $peerName = $peer['name'] ?? null;
+                if (! $peerName || ! ($peer['connected'] ?? false)) {
+                    continue;
+                }
+
+                $bridge->send(new AmpMessage([
+                    'amp' => '1',
+                    'type' => 'event',
+                    'from' => "markweb.{$name}.amp",
+                    'to' => "markweb.{$peerName}.amp",
+                    'command' => 'heartbeat',
+                    'args' => $args,
+                ]));
+            }
         } catch (\Throwable) {
-            // meshd socket exists but daemon not running — silent
+            // meshd not running or send failed — silent
         }
     }
 })->everyFifteenSeconds()->name('mesh:self-heartbeat');
