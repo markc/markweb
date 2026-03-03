@@ -18,17 +18,19 @@ class MeshLocalOnly
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $allowed = ['127.0.0.1', '::1'];
+        $ip = $request->ip();
 
-        // Also accept this node's own WireGuard IP (meshd callback via HTTPS proxy)
-        $wgIp = config('mesh.node_wg_ip');
-        if ($wgIp) {
-            $allowed[] = $wgIp;
+        // Accept localhost
+        if (in_array($ip, ['127.0.0.1', '::1'], true)) {
+            return $next($request);
         }
 
-        if (! in_array($request->ip(), $allowed, true)) {
-            abort(403, 'Mesh inbound only accepts local connections');
+        // Accept WireGuard mesh subnet (172.16.2.x)
+        if (str_starts_with($ip, '172.16.2.')) {
+            return $next($request);
         }
+
+        abort(403, 'Mesh inbound only accepts local/WireGuard connections');
 
         return $next($request);
     }

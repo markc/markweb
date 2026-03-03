@@ -36,35 +36,42 @@ Schedule::call(function () {
 
     broadcast(new MeshNodeUpdated($cache->get($name)));
 
-    // Send heartbeat to each peer via meshd (unicast — no broadcast in meshd yet)
+    // POST heartbeat to each peer's inbound endpoint over WireGuard
     $bridge = app(MeshBridgeService::class);
+    $peers = [];
     if ($bridge->isAvailable()) {
-        $args = json_encode(array_filter([
+        try {
+            $status = $bridge->status();
+            $peers = $status['peers'] ?? [];
+        } catch (\Throwable) {}
+    }
+
+    $payload = (new AmpMessage([
+        'amp' => '1',
+        'type' => 'event',
+        'from' => "markweb.{$name}.amp",
+        'command' => 'heartbeat',
+        'args' => json_encode(array_filter([
             'name' => $name,
             'wg_ip' => $wgIp,
             'load' => $load,
             'url' => $url,
-        ]));
+        ])),
+    ]))->toWire();
+
+    foreach ($peers as $peer) {
+        $peerIp = $peer['wg_ip'] ?? null;
+        if (! $peerIp || ! ($peer['connected'] ?? false)) {
+            continue;
+        }
 
         try {
-            $status = $bridge->status();
-            foreach ($status['peers'] ?? [] as $peer) {
-                $peerName = $peer['name'] ?? null;
-                if (! $peerName || ! ($peer['connected'] ?? false)) {
-                    continue;
-                }
-
-                $bridge->send(new AmpMessage([
-                    'amp' => '1',
-                    'type' => 'event',
-                    'from' => "markweb.{$name}.amp",
-                    'to' => "markweb.{$peerName}.amp",
-                    'command' => 'heartbeat',
-                    'args' => $args,
-                ]));
-            }
+            \Illuminate\Support\Facades\Http::timeout(3)
+                ->withBody($payload, 'text/x-amp')
+                ->withoutVerifying()
+                ->post("https://{$peerIp}/api/mesh/inbound");
         } catch (\Throwable) {
-            // meshd not running or send failed — silent
+            // peer unreachable — silent
         }
     }
 })->everyFifteenSeconds()->name('mesh:self-heartbeat');
