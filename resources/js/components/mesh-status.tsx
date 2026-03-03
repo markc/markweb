@@ -1,4 +1,5 @@
 import { Network } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useMeshStatus, type MeshNode } from '@/hooks/use-mesh-status';
 
 function timeAgo(iso: string | null): string {
@@ -16,35 +17,44 @@ function NodeCard({ node }: { node: MeshNode }) {
     const load = (node.meta as Record<string, string> | null)?.load;
 
     return (
-        <div className="flex items-center gap-3 rounded-xl border p-4">
-            <div
-                className={`h-2.5 w-2.5 rounded-full ${
-                    node.status === 'online' ? 'bg-green-500' : 'bg-red-500'
-                }`}
-            />
-            <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{node.name}</span>
-                    <span className="text-xs text-muted-foreground">{node.wg_ip}</span>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{timeAgo(node.last_heartbeat_at)}</span>
-                    {load && <span>load: {load}</span>}
-                </div>
+        <div className="grid rounded-xl border p-4" style={{ gridTemplateColumns: 'auto 1fr auto' }}>
+            <div className="row-span-2 flex items-center pr-3">
+                <div
+                    className={`h-2.5 w-2.5 rounded-full ${
+                        node.status === 'online' ? 'bg-green-500' : 'bg-red-500'
+                    }`}
+                />
+            </div>
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">{node.name}</span>
+                <span className="text-xs text-muted-foreground">{node.wg_ip}</span>
             </div>
             <span
-                className={`text-xs font-medium ${
+                className={`text-right text-xs font-medium ${
                     node.status === 'online' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 }`}
             >
                 {node.status}
             </span>
+            <div className="text-xs tabular-nums text-muted-foreground">
+                {load ? `load: ${load}` : '\u00A0'}
+            </div>
+            <div className="text-right text-xs tabular-nums text-muted-foreground">
+                {timeAgo(node.last_heartbeat_at)}
+            </div>
         </div>
     );
 }
 
 export function MeshStatus() {
     const { nodes } = useMeshStatus();
+
+    // Tick every 15s to keep timeAgo labels fresh (matches heartbeat interval)
+    const [, setTick] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setTick((t) => t + 1), 15000);
+        return () => clearInterval(id);
+    }, []);
 
     return (
         <div>

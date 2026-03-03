@@ -4,68 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Events\MeshNodeUpdated;
-use App\Models\MeshNode;
+use App\Services\Mesh\MeshNodeCache;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class MeshController extends Controller
 {
     /**
-     * List all mesh nodes — browser auth.
+     * List all mesh nodes from Redis cache.
      */
-    public function nodes(): JsonResponse
+    public function nodes(MeshNodeCache $cache): JsonResponse
     {
-        return response()->json(MeshNode::orderBy('name')->get());
-    }
-
-    /**
-     * Sync endpoint — bearer token auth.
-     * Called by secondary nodes to pull full mesh state from primary.
-     */
-    public function sync(Request $request): JsonResponse
-    {
-        $token = config('services.system_event_token');
-
-        if (! $token || $request->bearerToken() !== $token) {
-            abort(401, 'Invalid token');
-        }
-
-        return response()->json(MeshNode::orderBy('name')->get());
-    }
-
-    /**
-     * Heartbeat endpoint — bearer token auth.
-     * Called by remote nodes over WireGuard.
-     */
-    public function heartbeat(Request $request): JsonResponse
-    {
-        $token = config('services.system_event_token');
-
-        if (! $token || $request->bearerToken() !== $token) {
-            abort(401, 'Invalid token');
-        }
-
-        $validated = $request->validate([
-            'node' => 'required|string|max:100',
-            'wg_ip' => 'required|ip',
-            'meta' => 'nullable|array',
-        ]);
-
-        $node = MeshNode::updateOrCreate(
-            ['name' => $validated['node']],
-            [
-                'wg_ip' => $validated['wg_ip'],
-                'status' => 'online',
-                'last_heartbeat_at' => now(),
-                'meta' => $validated['meta'] ?? null,
-            ],
-        );
-
-        if ($node->wasRecentlyCreated || $node->wasChanged(['status', 'wg_ip'])) {
-            broadcast(new MeshNodeUpdated($node));
-        }
-
-        return response()->json($node, 200);
+        return response()->json($cache->all());
     }
 }

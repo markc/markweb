@@ -8,8 +8,8 @@ use App\DTOs\AmpMessage;
 use App\Events\MeshNodeUpdated;
 use App\Events\MeshTaskUpdated;
 use App\Jobs\ProcessMeshTask;
-use App\Models\MeshNode;
 use App\Models\MeshTask;
+use App\Services\Mesh\MeshNodeCache;
 use App\Services\Mesh\MeshPermissionGuard;
 use App\Services\Mesh\MeshTaskService;
 use Illuminate\Http\JsonResponse;
@@ -36,7 +36,7 @@ class MeshInboundController extends Controller
         $peer = $request->header('X-Mesh-Peer', $message->get('from') ?? 'unknown');
 
         return match ($command) {
-            'hello' => $this->handleHello($message, $peer),
+            'hello', 'heartbeat' => $this->handleHello($message, $peer),
             'disconnect' => $this->handleDisconnect($message, $peer),
             'dispatch' => $this->handleDispatch($message, $guard),
             'dispatch.result' => $this->handleDispatchResult($message, $taskService),
@@ -49,19 +49,18 @@ class MeshInboundController extends Controller
         $args = $message->args() ?? [];
         $nodeName = $args['name'] ?? $this->extractNodeName($peer);
 
-        $node = MeshNode::updateOrCreate(
-            ['name' => $nodeName],
-            [
-                'wg_ip' => $args['wg_ip'] ?? null,
-                'status' => 'online',
-                'last_heartbeat_at' => now(),
-                'meta' => array_filter([
-                    'url' => $args['url'] ?? null,
-                    'load' => $args['load'] ?? null,
-                ]),
-            ],
-        );
+        $cache = app(MeshNodeCache::class);
+        $cache->put($nodeName, [
+            'wg_ip' => $args['wg_ip'] ?? null,
+            'status' => 'online',
+            'last_heartbeat_at' => now()->toISOString(),
+            'meta' => array_filter([
+                'url' => $args['url'] ?? null,
+                'load' => $args['load'] ?? null,
+            ]),
+        ]);
 
+        $node = $cache->get($nodeName);
         broadcast(new MeshNodeUpdated($node));
 
         return response()->json(['status' => 'ok', 'node' => $nodeName]);
@@ -72,10 +71,11 @@ class MeshInboundController extends Controller
         $args = $message->args() ?? [];
         $nodeName = $args['name'] ?? $this->extractNodeName($peer);
 
-        $node = MeshNode::where('name', $nodeName)->first();
+        $cache = app(MeshNodeCache::class);
+        $cache->markOffline($nodeName);
 
+        $node = $cache->get($nodeName);
         if ($node) {
-            $node->update(['status' => 'offline']);
             broadcast(new MeshNodeUpdated($node));
         }
 

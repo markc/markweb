@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Models\MeshNode;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class MeshNodeUpdated implements ShouldBroadcast
+class MeshNodeUpdated implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, InteractsWithSockets;
 
+    /**
+     * @param  array<string, mixed>  $node  Node data from MeshNodeCache
+     */
     public function __construct(
-        public readonly MeshNode $meshNode,
+        public readonly array $node,
     ) {}
 
     public function broadcastAs(): string
@@ -40,13 +41,6 @@ class MeshNodeUpdated implements ShouldBroadcast
      */
     public function broadcastWith(): array
     {
-        return [
-            'id' => $this->meshNode->id,
-            'name' => $this->meshNode->name,
-            'wg_ip' => $this->meshNode->wg_ip,
-            'status' => $this->meshNode->status,
-            'last_heartbeat_at' => $this->meshNode->last_heartbeat_at?->toISOString(),
-            'meta' => $this->meshNode->meta,
-        ];
+        return $this->node;
     }
 }

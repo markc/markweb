@@ -48,7 +48,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
         const channel = window.Echo.private(`chat.user.${userId}`);
 
         const reloadSidebar = () => {
-            router.reload({ only: ['sidebarConversations', 'sidebarStats'] });
+            router.reload({ only: ['sidebarConversations', 'sidebarStats'], async: true });
         };
 
         channel.listen('.session.created', reloadSidebar);

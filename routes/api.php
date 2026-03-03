@@ -55,10 +55,8 @@ Route::post('mesh/inbound', [MeshInboundController::class, 'receive'])
     ->middleware('mesh.local')
     ->name('mesh.inbound');
 
-// Mesh node routes
+// Mesh node routes (reads from Redis, no database)
 Route::middleware(['web', 'auth'])->get('mesh/nodes', [MeshController::class, 'nodes'])->name('mesh.nodes');
-Route::get('mesh/sync', [MeshController::class, 'sync'])->name('mesh.sync');
-Route::post('mesh/heartbeat', [MeshController::class, 'heartbeat'])->name('mesh.heartbeat');
 
 // Mesh task routes — bearer token auth (inter-node)
 Route::post('mesh/task/dispatch', [MeshTaskController::class, 'dispatch'])->name('mesh.task.dispatch');
