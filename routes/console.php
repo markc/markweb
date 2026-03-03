@@ -89,16 +89,24 @@ Schedule::call(function () {
             }
 
             $connected = $peer['connected'] ?? false;
-            $lastSeenSecs = $peer['last_seen_secs'] ?? null;
-            $lastHeartbeat = $lastSeenSecs !== null
-                ? now()->subSeconds((int) $lastSeenSecs)->toISOString()
-                : now()->toISOString();
 
-            $cache->put($name, [
+            // Only update status and wg_ip — don't clobber last_heartbeat_at
+            // which is set more accurately by incoming AMP heartbeats
+            $data = [
                 'wg_ip' => $peer['wg_ip'] ?? null,
                 'status' => $connected ? 'online' : 'offline',
-                'last_heartbeat_at' => $lastHeartbeat,
-            ]);
+            ];
+
+            // Only set last_heartbeat_at if no existing value (bootstrap)
+            $existing = $cache->get($name);
+            if (! $existing || empty($existing['last_heartbeat_at'])) {
+                $lastSeenSecs = $peer['last_seen_secs'] ?? null;
+                $data['last_heartbeat_at'] = $lastSeenSecs !== null
+                    ? now()->subSeconds((int) $lastSeenSecs)->toISOString()
+                    : now()->toISOString();
+            }
+
+            $cache->put($name, $data);
         }
     } catch (\Throwable) {
         // meshd not running or unreachable — silent
