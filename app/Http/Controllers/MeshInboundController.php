@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\DTOs\AmpMessage;
-use App\Events\MeshNodeUpdated;
+use App\Events\MeshNodesUpdated;
 use App\Events\MeshTaskUpdated;
 use App\Jobs\ProcessMeshTask;
 use App\Models\MeshTask;
@@ -60,8 +60,7 @@ class MeshInboundController extends Controller
             ]),
         ]);
 
-        $node = $cache->get($nodeName);
-        broadcast(new MeshNodeUpdated($node));
+        // No broadcast here — the scheduler batches all nodes into one WS frame per tick
 
         return response()->json(['status' => 'ok', 'node' => $nodeName]);
     }
@@ -74,10 +73,15 @@ class MeshInboundController extends Controller
         $cache = app(MeshNodeCache::class);
         $cache->markOffline($nodeName);
 
-        $node = $cache->get($nodeName);
-        if ($node) {
-            broadcast(new MeshNodeUpdated($node));
-        }
+        // Immediate broadcast for status changes — don't wait for next batch tick
+        broadcast(new MeshNodesUpdated([
+            ['name' => $nodeName, 'status' => 'offline'],
+        ]));
+
+        // Update delta cache so next batch doesn't re-send
+        $lastBroadcast = \Illuminate\Support\Facades\Cache::get('mesh:last_broadcast', []);
+        $lastBroadcast[$nodeName] = ['status' => 'offline', 'load' => null];
+        \Illuminate\Support\Facades\Cache::put('mesh:last_broadcast', $lastBroadcast, 120);
 
         return response()->json(['status' => 'ok', 'node' => $nodeName]);
     }

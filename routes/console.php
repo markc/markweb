@@ -1,11 +1,12 @@
 <?php
 
 use App\DTOs\AmpMessage;
-use App\Events\MeshNodeUpdated;
+use App\Events\MeshNodesUpdated;
 use App\Services\Mesh\MeshBridgeService;
 use App\Services\Mesh\MeshNodeCache;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -25,7 +26,7 @@ Schedule::call(function () {
     $load = implode(' ', array_slice(explode(' ', $raw), 0, 3));
     $url = config('mesh.node_url');
 
-    // Write to Redis (no database) + broadcast to local Reverb
+    // Write self to Redis cache
     $cache = app(MeshNodeCache::class);
     $cache->put($name, [
         'wg_ip' => $wgIp,
@@ -34,7 +35,39 @@ Schedule::call(function () {
         'meta' => array_filter(['load' => $load, 'url' => $url]),
     ]);
 
-    broadcast(new MeshNodeUpdated($cache->get($name)));
+    // Batched delta broadcast — one WS frame for all nodes, only changed fields
+    $allNodes = $cache->all();
+    $lastBroadcast = Cache::get('mesh:last_broadcast', []);
+    $batch = [];
+    $hasChanges = false;
+
+    foreach ($allNodes as $node) {
+        $nodeName = $node['name'];
+        $nodeLoad = $node['meta']['load'] ?? null;
+        $nodeStatus = $node['status'] ?? 'offline';
+        $prev = $lastBroadcast[$nodeName] ?? null;
+
+        $entry = ['name' => $nodeName];
+
+        if (! $prev || ($prev['status'] ?? null) !== $nodeStatus) {
+            $entry['status'] = $nodeStatus;
+            $hasChanges = true;
+        }
+
+        if (! $prev || ($prev['load'] ?? null) !== $nodeLoad) {
+            $entry['load'] = $nodeLoad;
+            $hasChanges = true;
+        }
+
+        $batch[] = $entry;
+        $lastBroadcast[$nodeName] = ['status' => $nodeStatus, 'load' => $nodeLoad];
+    }
+
+    // Only broadcast when something actually changed
+    if ($hasChanges) {
+        Cache::put('mesh:last_broadcast', $lastBroadcast, 120);
+        broadcast(new MeshNodesUpdated($batch));
+    }
 
     // Send heartbeat to each peer via meshd
     $bridge = app(MeshBridgeService::class);

@@ -1,6 +1,5 @@
-import { Network } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useMeshStatus, type MeshNode } from '@/hooks/use-mesh-status';
+import { Activity, Network } from 'lucide-react';
+import { useMeshStatus, type MeshNode, type MeshStats } from '@/hooks/use-mesh-status';
 
 function timeAgo(iso: string | null): string {
     if (!iso) return 'never';
@@ -11,6 +10,21 @@ function timeAgo(iso: string | null): string {
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
     return `${hrs}h ago`;
+}
+
+function formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatUptime(seconds: number): string {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins < 60) return `${mins}m ${secs}s`;
+    const hrs = Math.floor(mins / 60);
+    return `${hrs}h ${mins % 60}m`;
 }
 
 function NodeCard({ node }: { node: MeshNode }) {
@@ -46,15 +60,33 @@ function NodeCard({ node }: { node: MeshNode }) {
     );
 }
 
-export function MeshStatus() {
-    const { nodes } = useMeshStatus();
+function WsStats({ stats }: { stats: MeshStats }) {
+    if (stats.totalMessages === 0) return null;
 
-    // Tick every 15s to keep timeAgo labels fresh (matches heartbeat interval)
-    const [, setTick] = useState(0);
-    useEffect(() => {
-        const id = setInterval(() => setTick((t) => t + 1), 15000);
-        return () => clearInterval(id);
-    }, []);
+    return (
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border px-3 py-2 text-xs tabular-nums text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+                <Activity className="h-3 w-3" />
+                <span className="font-medium">{stats.msgsPerSec.toFixed(1)}</span> msg/s
+            </span>
+            <span>
+                <span className="font-medium">{formatBytes(Math.round(stats.bytesPerSec))}</span>/s
+            </span>
+            <span className="border-l pl-4">
+                <span className="font-medium">{stats.totalMessages.toLocaleString()}</span> msgs
+            </span>
+            <span>
+                <span className="font-medium">{formatBytes(stats.totalBytes)}</span> total
+            </span>
+            <span className="border-l pl-4">
+                uptime <span className="font-medium">{formatUptime(stats.uptimeSeconds)}</span>
+            </span>
+        </div>
+    );
+}
+
+export function MeshStatus() {
+    const { nodes, stats } = useMeshStatus();
 
     return (
         <div>
@@ -68,11 +100,14 @@ export function MeshStatus() {
             {nodes.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No mesh nodes registered yet.</p>
             ) : (
-                <div className="grid gap-3 md:grid-cols-3">
-                    {nodes.map((node) => (
-                        <NodeCard key={node.id} node={node} />
-                    ))}
-                </div>
+                <>
+                    <div className="grid gap-3 md:grid-cols-3">
+                        {nodes.map((node) => (
+                            <NodeCard key={node.id} node={node} />
+                        ))}
+                    </div>
+                    <WsStats stats={stats} />
+                </>
             )}
         </div>
     );
