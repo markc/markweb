@@ -5,11 +5,13 @@ import Sidebar from '@/components/sidebar';
 import NavPanel from '@/components/panels/l1-nav-panel';
 import ConversationsPanel from '@/components/panels/l2-conversations-panel';
 import DocsPanel from '@/components/panels/l3-docs-panel';
+import DocumentsPanel from '@/components/panels/l3-documents-panel';
 import MailboxesPanel from '@/components/panels/l4-mailboxes-panel';
 import ThemePanel from '@/components/panels/r1-theme-panel';
 import UsagePanel from '@/components/panels/r2-usage-panel';
 import NotificationsPanel from '@/components/panels/r3-notifications-panel';
 import AppmeshPanel from '@/components/panels/l5-appmesh-panel';
+import ChannelsPanel from '@/components/panels/l6-channels-panel';
 import AppmeshEventsPanel from '@/components/panels/r4-appmesh-events-panel';
 import TopNav from '@/components/top-nav';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
@@ -18,8 +20,10 @@ const leftPanels = [
     { label: 'L1: Navigation', content: <NavPanel /> },
     { label: 'L2: Conversations', content: <ConversationsPanel /> },
     { label: 'L3: Docs', content: <DocsPanel /> },
+    { label: 'L3b: Documents', content: <DocumentsPanel /> },
     { label: 'L4: Mailboxes', content: <MailboxesPanel /> },
     { label: 'L5: AppMesh', content: <AppmeshPanel /> },
+    { label: 'L6: Channels', content: <ChannelsPanel /> },
 ];
 const rightPanels = [
     { label: 'R1: Theme', content: <ThemePanel /> },

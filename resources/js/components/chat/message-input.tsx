@@ -1,6 +1,8 @@
 import { FormEvent, KeyboardEvent, useRef, useState } from 'react';
-import { Send } from 'lucide-react';
+import { Paperclip, Send } from 'lucide-react';
 import { AvailableModels } from '@/types';
+import type { UserDocument } from '@/types/document';
+import FileMentionAutocomplete from './file-mention-autocomplete';
 
 interface Props {
     onSend: (content: string) => void;
@@ -12,6 +14,8 @@ interface Props {
     availableModels: AvailableModels;
     systemPrompt: string;
     onSystemPromptChange: (prompt: string) => void;
+    onFileUpload?: (files: FileList) => void;
+    documents?: UserDocument[];
 }
 
 export default function MessageInput({
@@ -24,10 +28,15 @@ export default function MessageInput({
     availableModels,
     systemPrompt,
     onSystemPromptChange,
+    onFileUpload,
+    documents = [],
 }: Props) {
     const [input, setInput] = useState('');
     const [showSystemPrompt, setShowSystemPrompt] = useState(false);
+    const [showMentions, setShowMentions] = useState(false);
+    const [cursorPos, setCursorPos] = useState(0);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -44,6 +53,32 @@ export default function MessageInput({
             e.preventDefault();
             handleSubmit(e);
         }
+        if (e.key === 'Escape') {
+            setShowMentions(false);
+        }
+    };
+
+    const handleInputChange = (value: string) => {
+        setInput(value);
+        const pos = textareaRef.current?.selectionStart ?? 0;
+        setCursorPos(pos);
+
+        // Check if we're typing after a '#'
+        const textBeforeCursor = value.slice(0, pos);
+        const hashIndex = textBeforeCursor.lastIndexOf('#');
+        const hasSpace = hashIndex >= 0 && textBeforeCursor.slice(hashIndex).includes(' ');
+        setShowMentions(hashIndex >= 0 && !hasSpace && documents.length > 0);
+    };
+
+    const handleMentionSelect = (filename: string) => {
+        const pos = cursorPos;
+        const hashIndex = input.slice(0, pos).lastIndexOf('#');
+        if (hashIndex >= 0) {
+            const newInput = input.slice(0, hashIndex) + '#' + filename + ' ' + input.slice(pos);
+            setInput(newInput);
+        }
+        setShowMentions(false);
+        textareaRef.current?.focus();
     };
 
     const handleInput = () => {
@@ -111,14 +146,41 @@ export default function MessageInput({
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="flex items-end gap-2">
+                <form onSubmit={handleSubmit} className="relative flex items-end gap-2">
+                    <FileMentionAutocomplete
+                        documents={documents}
+                        inputValue={input}
+                        cursorPosition={cursorPos}
+                        onSelect={handleMentionSelect}
+                        visible={showMentions}
+                    />
+                    {onFileUpload && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="rounded-xl px-2 py-3 text-sm transition-colors"
+                                style={{ color: 'var(--scheme-fg-muted)' }}
+                                title="Upload file"
+                            >
+                                <Paperclip className="h-5 w-5" />
+                            </button>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                multiple
+                                onChange={(e) => e.target.files && onFileUpload(e.target.files)}
+                            />
+                        </>
+                    )}
                     <textarea
                         ref={textareaRef}
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
+                        onChange={(e) => handleInputChange(e.target.value)}
                         onKeyDown={handleKeyDown}
                         onInput={handleInput}
-                        placeholder="Type a message..."
+                        placeholder="Type a message... (# to mention a document)"
                         rows={1}
                         disabled={isStreaming || isSending}
                         className="flex-1 resize-none rounded-xl border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-[var(--scheme-accent)] disabled:opacity-50"

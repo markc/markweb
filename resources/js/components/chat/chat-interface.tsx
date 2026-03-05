@@ -1,9 +1,12 @@
 import { usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AgentSession, AvailableModels, TextDeltaEvent, StreamEndEvent, StreamErrorEvent } from '@/types';
+import type { UserDocument, DocumentProcessedEvent } from '@/types/document';
 import { send } from '@/routes/chat';
 import MessageList from './message-list';
 import MessageInput from './message-input';
+import FileDropZone from './file-drop-zone';
+import DocumentChips from './document-chips';
 
 /** Convert session_key to a Pusher-safe channel name (colons → dots) */
 function channelName(sessionKey: string): string {
@@ -41,6 +44,7 @@ export default function ChatInterface({ session, availableModels }: Props) {
     const [systemPrompt, setSystemPrompt] = useState<string>(session?.system_prompt ?? '');
     const [isStreaming, setIsStreaming] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [uploadedDocs, setUploadedDocs] = useState<UserDocument[]>([]);
 
     // Track the accumulated text for the current streaming message
     const accumulatedRef = useRef('');
@@ -163,6 +167,81 @@ export default function ChatInterface({ session, availableModels }: Props) {
         };
     }, [sessionKey]);
 
+    // Load user documents and subscribe to document processing events
+    useEffect(() => {
+        const userId = (auth as any)?.user?.id;
+        if (!userId) return;
+
+        // Fetch existing documents
+        fetch('/chat/documents', {
+            headers: { Accept: 'application/json', 'X-XSRF-TOKEN': getCsrfToken() },
+        })
+            .then((r) => r.ok ? r.json() : [])
+            .then((docs: UserDocument[]) => setUploadedDocs(docs))
+            .catch(() => {});
+
+        // Listen for processing completion
+        const channel = window.Echo.private(`documents.user.${userId}`);
+        channel.listen('.document.processed', (e: DocumentProcessedEvent) => {
+            setUploadedDocs((prev) =>
+                prev.map((d) =>
+                    d.filename === e.filename
+                        ? { ...d, status: e.status, chunk_count: e.chunk_count }
+                        : d,
+                ),
+            );
+        });
+
+        return () => {
+            window.Echo.leave(`documents.user.${userId}`);
+        };
+    }, [(auth as any)?.user?.id]);
+
+    const handleFileDrop = useCallback(
+        async (files: FileList) => {
+            for (const file of Array.from(files)) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                setUploadedDocs((prev) => [
+                    {
+                        filename: file.name,
+                        mime_type: file.type,
+                        file_size: file.size,
+                        status: 'processing',
+                        chunk_count: 0,
+                        uploaded_at: new Date().toISOString(),
+                    },
+                    ...prev,
+                ]);
+
+                try {
+                    await fetch('/chat/documents', {
+                        method: 'POST',
+                        headers: { 'X-XSRF-TOKEN': getCsrfToken(), Accept: 'application/json' },
+                        body: formData,
+                    });
+                } catch (err) {
+                    console.error('Upload failed:', err);
+                    setUploadedDocs((prev) =>
+                        prev.map((d) =>
+                            d.filename === file.name ? { ...d, status: 'failed' } : d,
+                        ),
+                    );
+                }
+            }
+        },
+        [],
+    );
+
+    const handleRemoveDoc = useCallback(async (filename: string) => {
+        await fetch(`/chat/documents/${encodeURIComponent(filename)}`, {
+            method: 'DELETE',
+            headers: { 'X-XSRF-TOKEN': getCsrfToken(), Accept: 'application/json' },
+        });
+        setUploadedDocs((prev) => prev.filter((d) => d.filename !== filename));
+    }, []);
+
     const handleSend = useCallback(
         async (content: string) => {
             if (isStreaming || isSending || !content.trim()) return;
@@ -218,9 +297,41 @@ export default function ChatInterface({ session, availableModels }: Props) {
         [isStreaming, isSending, sessionKey, selectedModel, selectedProvider, systemPrompt]
     );
 
+    const handleFork = useCallback(
+        async (messageId: string) => {
+            if (!sessionKey) return;
+
+            // Find the session ID from URL (if viewing an existing session)
+            const match = window.location.pathname.match(/\/chat\/(\d+)/);
+            if (!match) return;
+
+            const sessionId = match[1];
+            try {
+                const response = await fetch(`/chat/${sessionId}/fork`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-XSRF-TOKEN': getCsrfToken(),
+                        Accept: 'application/json',
+                    },
+                    body: JSON.stringify({ from_message: messageId }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    window.location.href = `/chat/${data.session_id}`;
+                }
+            } catch (err) {
+                console.error('Fork failed:', err);
+            }
+        },
+        [sessionKey],
+    );
+
     return (
-        <div className="flex flex-col" style={{ height: 'calc(100vh - var(--topnav-height))' }}>
-            <MessageList messages={messages} />
+        <FileDropZone onFileDrop={handleFileDrop} disabled={isStreaming}>
+            <MessageList messages={messages} onFork={handleFork} />
+            <DocumentChips documents={uploadedDocs.filter((d) => d.status === 'processing')} />
             <MessageInput
                 onSend={handleSend}
                 isStreaming={isStreaming}
@@ -234,7 +345,9 @@ export default function ChatInterface({ session, availableModels }: Props) {
                 availableModels={availableModels}
                 systemPrompt={systemPrompt}
                 onSystemPromptChange={setSystemPrompt}
+                onFileUpload={handleFileDrop}
+                documents={uploadedDocs}
             />
-        </div>
+        </FileDropZone>
     );
 }

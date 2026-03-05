@@ -8,7 +8,12 @@ interface LocalMessage {
     isStreaming?: boolean;
 }
 
-export default function MessageList({ messages }: { messages: LocalMessage[] }) {
+interface Props {
+    messages: LocalMessage[];
+    onFork?: (messageId: string) => void;
+}
+
+export default function MessageList({ messages, onFork }: Props) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -34,7 +39,7 @@ export default function MessageList({ messages }: { messages: LocalMessage[] }) 
         <div className="flex-1 overflow-y-auto px-4 py-6">
             <div className="mx-auto max-w-3xl space-y-4">
                 {messages.map((msg) => (
-                    <MessageBubble key={msg.id} message={msg} />
+                    <MessageBubble key={msg.id} message={msg} onFork={onFork} />
                 ))}
                 <div ref={bottomRef} />
             </div>

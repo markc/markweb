@@ -2,6 +2,7 @@ export type * from './auth';
 export type * from './navigation';
 export type * from './ui';
 export type * from './agent';
+export type * from './document';
 
 import type { Auth } from './auth';
 import type { AgentSession, AvailableModels, SidebarStats } from './agent';

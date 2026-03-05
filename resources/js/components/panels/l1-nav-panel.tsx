@@ -1,12 +1,14 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookUser, Calendar, FileText, Home, Link2, Mail, MessageSquare, Users, Zap } from 'lucide-react';
+import { BookUser, Bot, Calendar, FileText, Hash, Home, Link2, Mail, MessageSquare, Users, Zap } from 'lucide-react';
 import { useBasePath } from '@/hooks/use-base-path';
 
 const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/chat', label: 'AI Chat', icon: MessageSquare },
+    { path: '/text-chat', label: 'Text Chat', icon: Hash },
     { path: '/mail', label: 'Mail', icon: Mail },
     { path: '/appmesh', label: 'AppMesh', icon: Zap },
+    { path: '/workspace/agents', label: 'Agents', icon: Bot },
     { path: '/docs', label: 'Docs', icon: FileText },
     { path: '/users', label: 'Users', icon: Users },
     { path: '/calendars', label: 'Calendars', icon: Calendar },

@@ -1,3 +1,4 @@
+import { GitFork } from 'lucide-react';
 import { createCodePlugin } from '@streamdown/code';
 import { Streamdown } from 'streamdown';
 
@@ -11,13 +12,18 @@ interface LocalMessage {
     activeTool?: string | null;
 }
 
-export default function MessageBubble({ message }: { message: LocalMessage }) {
+interface Props {
+    message: LocalMessage;
+    onFork?: (messageId: string) => void;
+}
+
+export default function MessageBubble({ message, onFork }: Props) {
     const isUser = message.role === 'user';
 
     return (
-        <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+        <div className={`group flex ${isUser ? 'justify-end' : 'justify-start'}`}>
             <div
-                className="max-w-[80%] rounded-2xl px-4 py-3"
+                className="relative max-w-[80%] rounded-2xl px-4 py-3"
                 style={
                     isUser
                         ? { backgroundColor: 'var(--scheme-accent)', color: 'var(--scheme-accent-fg)' }
@@ -59,6 +65,15 @@ export default function MessageBubble({ message }: { message: LocalMessage }) {
                             <span className="ml-1 inline-block h-4 w-1 animate-pulse bg-current" />
                         )}
                     </div>
+                )}
+                {!isUser && onFork && !message.isStreaming && message.content && (
+                    <button
+                        onClick={() => onFork(message.id)}
+                        className="absolute -right-8 top-1 rounded p-1 opacity-0 transition-opacity hover:bg-accent/10 group-hover:opacity-100"
+                        title="Fork from here"
+                    >
+                        <GitFork className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
                 )}
             </div>
         </div>

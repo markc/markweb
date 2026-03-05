@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { MessageSquare, Plus, Search, Trash2 } from 'lucide-react';
+import { Download, Link2, MessageSquare, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useBasePath } from '@/hooks/use-base-path';
@@ -64,6 +64,36 @@ export default function ConversationsPanel() {
                             <span className="truncate">{conv.title}</span>
                         </Link>
                         <div className="absolute right-1 top-1/2 flex -translate-y-1/2 gap-0.5 rounded-lg border bg-background px-1 py-0.5 shadow-sm opacity-0 transition-opacity group-hover:opacity-100">
+                            <a
+                                href={url(`/chat/${conv.id}/export?format=md`)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="rounded p-1 hover:bg-accent/10"
+                                title="Export as Markdown"
+                            >
+                                <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                            </a>
+                            <button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    try {
+                                        const token = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+                                        const csrf = token ? decodeURIComponent(token[1]) : '';
+                                        const res = await fetch(url(`/chat/${conv.id}/share`), {
+                                            method: 'POST',
+                                            headers: { 'X-XSRF-TOKEN': csrf, Accept: 'application/json' },
+                                        });
+                                        if (res.ok) {
+                                            const data = await res.json();
+                                            await navigator.clipboard.writeText(data.share_url);
+                                        }
+                                    } catch {}
+                                }}
+                                className="rounded p-1 hover:bg-accent/10"
+                                title="Copy share link"
+                            >
+                                <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
