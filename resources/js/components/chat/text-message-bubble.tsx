@@ -29,6 +29,10 @@ export default function TextMessageBubble({
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     const isOwn = message.user_id === currentUserId;
+    const displayName = message.user?.name
+        ?? (message.metadata?.remote_user_name
+            ? `${message.metadata.remote_user_name} (${message.metadata.origin_node ?? 'remote'})`
+            : 'Unknown');
     const isDeleted = !!message.deleted_at;
     const isEdited = message.updated_at !== message.created_at && !isDeleted;
     const time = new Date(message.created_at).toLocaleTimeString([], {
@@ -72,12 +76,12 @@ export default function TextMessageBubble({
             }}
         >
             <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--scheme-accent)]/20 text-xs font-bold text-[var(--scheme-accent)]">
-                {message.user?.name?.charAt(0).toUpperCase() ?? '?'}
+                {displayName.charAt(0).toUpperCase()}
             </div>
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-semibold">{message.user?.name ?? 'Unknown'}</span>
+                    <span className="text-sm font-semibold">{displayName}</span>
                     <span className="text-[11px] text-muted-foreground">{time}</span>
                     {isEdited && <span className="text-[10px] text-muted-foreground">(edited)</span>}
                 </div>

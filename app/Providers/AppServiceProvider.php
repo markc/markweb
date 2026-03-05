@@ -46,6 +46,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\Chat\MessageSent::class,
+            \App\Listeners\Chat\ForwardMessageToMesh::class,
+        );
     }
 
     /**

@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\DTOs\AmpMessage;
+use App\Events\Chat\MessageSent;
 use App\Events\MeshNodesUpdated;
 use App\Events\MeshTaskUpdated;
 use App\Jobs\ProcessMeshTask;
+use App\Models\Chat\ChatChannel;
+use App\Models\Chat\ChatMessage;
 use App\Models\MeshTask;
+use App\Services\Mesh\MeshBridgeService;
 use App\Services\Mesh\MeshNodeCache;
 use App\Services\Mesh\MeshPermissionGuard;
 use App\Services\Mesh\MeshTaskService;
+use App\Services\Search\DTOs\SearchRequest;
+use App\Services\Search\SearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -40,6 +46,8 @@ class MeshInboundController extends Controller
             'disconnect' => $this->handleDisconnect($message, $peer),
             'dispatch' => $this->handleDispatch($message, $guard),
             'dispatch.result' => $this->handleDispatchResult($message, $taskService),
+            'chat-message' => $this->handleChatMessage($message),
+            'search-request' => $this->handleSearchRequest($message),
             default => $this->handleUnknown($command, $peer),
         };
     }
@@ -150,6 +158,80 @@ class MeshInboundController extends Controller
         }
 
         return response()->json(['id' => $task->id, 'status' => $task->status]);
+    }
+
+    protected function handleChatMessage(AmpMessage $message): JsonResponse
+    {
+        $json = $message->get('json');
+        if (! $json) {
+            return response()->json(['status' => 'ignored', 'reason' => 'no json']);
+        }
+
+        $data = json_decode($json, true);
+        if (! $data) {
+            return response()->json(['status' => 'ignored', 'reason' => 'invalid json']);
+        }
+
+        $channel = ChatChannel::where('slug', $data['channel_slug'] ?? '')->first();
+        if (! $channel) {
+            return response()->json(['status' => 'ignored', 'reason' => 'channel not found']);
+        }
+
+        $chatMessage = ChatMessage::create([
+            'channel_id' => $channel->id,
+            'user_id' => null,
+            'content' => $data['content'] ?? '',
+            'type' => $data['type'] ?? 'message',
+            'metadata' => [
+                'origin_node' => $data['origin_node'] ?? 'unknown',
+                'origin_id' => $data['origin_id'] ?? null,
+                'remote_user_name' => $data['user_name'] ?? 'Unknown',
+            ],
+        ]);
+
+        $chatMessage->load('user');
+        broadcast(new MessageSent($chatMessage))->toOthers();
+
+        return response()->json(['status' => 'ok', 'id' => $chatMessage->id]);
+    }
+
+    protected function handleSearchRequest(AmpMessage $message): JsonResponse
+    {
+        $json = $message->get('json');
+        if (! $json) {
+            return response()->json(['status' => 'ignored', 'reason' => 'no json']);
+        }
+
+        $data = json_decode($json, true);
+        if (! $data) {
+            return response()->json(['status' => 'ignored', 'reason' => 'invalid json']);
+        }
+
+        $searchRequest = SearchRequest::fromArray($data);
+        $results = app(SearchService::class)->search($searchRequest);
+
+        $bridge = app(MeshBridgeService::class);
+        $nodeName = $bridge->nodeName();
+
+        $responseAmp = new AmpMessage(
+            headers: [
+                'amp' => '1',
+                'type' => 'response',
+                'from' => "search.markweb.{$nodeName}.amp",
+                'to' => $message->get('from') ?? '',
+                'command' => 'search-response',
+                'reply-to' => $message->get('id') ?? '',
+                'json' => json_encode($results->toArray()),
+            ],
+        );
+
+        try {
+            $bridge->send($responseAmp);
+        } catch (\Throwable $e) {
+            Log::warning('MeshInbound: failed to send search response', ['error' => $e->getMessage()]);
+        }
+
+        return response()->json(['status' => 'ok']);
     }
 
     protected function handleUnknown(?string $command, string $peer): JsonResponse

@@ -48,6 +48,41 @@ class MeshBridgeService
     }
 
     /**
+     * Get the local node name from config.
+     */
+    public function nodeName(): string
+    {
+        return config('mesh.node_name', 'unknown');
+    }
+
+    /**
+     * Get list of connected peer node names from meshd status.
+     *
+     * @return string[]
+     */
+    public function connectedPeers(): array
+    {
+        if (! $this->isAvailable()) {
+            return [];
+        }
+
+        try {
+            $status = $this->status();
+            $peers = [];
+
+            foreach ($status as $peer) {
+                if (($peer['state'] ?? '') === 'connected') {
+                    $peers[] = $peer['name'] ?? $peer['node'] ?? '';
+                }
+            }
+
+            return array_filter($peers);
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
      * Check if meshd socket is available.
      */
     public function isAvailable(): bool
