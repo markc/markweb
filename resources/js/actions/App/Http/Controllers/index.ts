@@ -19,6 +19,7 @@ import CalendarController from './CalendarController'
 import EventController from './EventController'
 import AddressBookController from './AddressBookController'
 import ContactController from './ContactController'
+import Chat from './Chat'
 import AgentCardController from './AgentCardController'
 import ShareController from './ShareController'
 import Settings from './Settings'
@@ -46,6 +47,7 @@ const Controllers = {
     EventController: Object.assign(EventController, EventController),
     AddressBookController: Object.assign(AddressBookController, AddressBookController),
     ContactController: Object.assign(ContactController, ContactController),
+    Chat: Object.assign(Chat, Chat),
     AgentCardController: Object.assign(AgentCardController, AgentCardController),
     ShareController: Object.assign(ShareController, ShareController),
     Settings: Object.assign(Settings, Settings),
