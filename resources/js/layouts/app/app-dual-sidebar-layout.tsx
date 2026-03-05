@@ -12,6 +12,7 @@ import UsagePanel from '@/components/panels/r2-usage-panel';
 import NotificationsPanel from '@/components/panels/r3-notifications-panel';
 import AppmeshPanel from '@/components/panels/l5-appmesh-panel';
 import ChannelsPanel from '@/components/panels/l6-channels-panel';
+import SearchPanel from '@/components/panels/l7-search-panel';
 import AppmeshEventsPanel from '@/components/panels/r4-appmesh-events-panel';
 import TopNav from '@/components/top-nav';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
@@ -24,6 +25,7 @@ const leftPanels = [
     { label: 'L4: Mailboxes', content: <MailboxesPanel /> },
     { label: 'L5: AppMesh', content: <AppmeshPanel /> },
     { label: 'L6: Channels', content: <ChannelsPanel /> },
+    { label: 'L7: Search', content: <SearchPanel /> },
 ];
 const rightPanels = [
     { label: 'R1: Theme', content: <ThemePanel /> },

@@ -2,8 +2,9 @@
 
 namespace App\Services\Tools\BuiltIn;
 
+use App\Services\Search\DTOs\SearchRequest;
+use App\Services\Search\SearchService;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Facades\Http;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
 
@@ -16,56 +17,42 @@ class WebSearchTool implements Tool
 
     public function description(): string
     {
-        return 'Search the web for current information using Brave Search. Returns titles, URLs, and snippets for the top results.';
+        return 'Search the web using multiple search engines (Brave, DuckDuckGo, Google, Bing). Returns aggregated results with titles, URLs, and snippets.';
     }
 
     public function handle(Request $request): string
     {
         $query = $request['query'] ?? '';
-        $maxResults = min((int) ($request['max_results'] ?? 5), 10);
+        $maxResults = min((int) ($request['max_results'] ?? 8), 15);
+        $category = $request['category'] ?? 'general';
 
         if (empty($query)) {
             return 'Error: query parameter is required.';
         }
 
-        $apiKey = config('tools.web_search.api_key');
-        if (empty($apiKey)) {
-            return 'Error: Brave Search API key not configured.';
-        }
-
         try {
-            $response = Http::timeout(10)
-                ->withHeaders([
-                    'X-Subscription-Token' => $apiKey,
-                    'Accept' => 'application/json',
-                ])
-                ->get('https://api.search.brave.com/res/v1/web/search', [
-                    'q' => $query,
-                    'count' => $maxResults,
-                ]);
+            $service = app(SearchService::class);
+            $searchRequest = new SearchRequest(
+                query: $query,
+                category: $category,
+            );
 
-            if (! $response->successful()) {
-                return "Error: Brave Search API returned HTTP {$response->status()}";
-            }
+            $results = $service->search($searchRequest);
 
-            $data = $response->json();
-            $results = $data['web']['results'] ?? [];
-
-            if (empty($results)) {
+            if (empty($results->results)) {
                 return 'No results found.';
             }
 
             $formatted = [];
-            foreach (array_slice($results, 0, $maxResults) as $i => $result) {
+            foreach (array_slice($results->results, 0, $maxResults) as $i => $result) {
                 $num = $i + 1;
-                $title = $result['title'] ?? 'Untitled';
-                $url = $result['url'] ?? '';
-                $description = $result['description'] ?? '';
-
-                $formatted[] = "{$num}. {$title}\n   URL: {$url}\n   {$description}";
+                $engines = implode(', ', $result->engines);
+                $formatted[] = "[{$num}] {$result->title}\n    {$result->url}\n    {$result->content}\n    (from: {$engines})";
             }
 
-            return implode("\n\n", $formatted);
+            $engineList = implode(', ', array_keys($results->engines));
+
+            return "Search results for: {$query}\nEngines: {$engineList} ({$results->totalTime}s)\n\n".implode("\n\n", $formatted);
         } catch (\Throwable $e) {
             return 'Error: '.$e->getMessage();
         }
@@ -78,7 +65,9 @@ class WebSearchTool implements Tool
                 ->description('The search query')
                 ->required(),
             'max_results' => $schema->number()
-                ->description('Maximum number of results to return (1-10, default 5)'),
+                ->description('Maximum number of results to return (1-15, default 8)'),
+            'category' => $schema->string()
+                ->description('Search category: general, images, or videos (default: general)'),
         ];
     }
 }

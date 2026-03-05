@@ -5,12 +5,17 @@ use App\Http\Controllers\MeshController;
 use App\Http\Controllers\MeshInboundController;
 use App\Http\Controllers\MeshTaskController;
 use App\Http\Controllers\OpenClawPushController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SystemEventController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth'])->group(function () {
     Route::post('filelink/upload', [FileLinkController::class, 'upload'])->name('filelink.upload');
     Route::delete('filelink/{sharedFile}', [FileLinkController::class, 'destroy'])->name('filelink.destroy');
+
+    // SearchX web search
+    Route::get('searchx', [SearchController::class, 'search'])->name('searchx.search');
+    Route::get('searchx/autocomplete', [SearchController::class, 'autocomplete'])->name('searchx.autocomplete');
 
     // JMAP mail routes
     Route::post('jmap/connect', [\App\Http\Controllers\JmapAuthController::class, 'connect'])->name('jmap.connect');

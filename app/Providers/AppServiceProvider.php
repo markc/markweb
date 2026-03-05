@@ -2,6 +2,13 @@
 
 namespace App\Providers;
 
+use App\Services\Search\EngineRegistry;
+use App\Services\Search\Engines\BingEngine;
+use App\Services\Search\Engines\BraveApiEngine;
+use App\Services\Search\Engines\DuckDuckGoEngine;
+use App\Services\Search\Engines\GoogleEngine;
+use App\Services\Search\Engines\GoogleImagesEngine;
+use App\Services\Search\Engines\YouTubeEngine;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +22,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(EngineRegistry::class, function () {
+            $registry = new EngineRegistry;
+
+            foreach ([
+                new BraveApiEngine,
+                new DuckDuckGoEngine,
+                new GoogleEngine,
+                new BingEngine,
+                new YouTubeEngine,
+                new GoogleImagesEngine,
+            ] as $engine) {
+                $registry->register($engine);
+            }
+
+            return $registry;
+        });
     }
 
     /**
