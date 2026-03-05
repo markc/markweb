@@ -4,6 +4,7 @@ namespace App\Services\Agent;
 
 use App\DTOs\IncomingMessage;
 use App\Models\AgentSession;
+use App\Services\Document\DocumentSearchService;
 use App\Services\Memory\MemorySearchService;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +13,7 @@ class ContextAssembler
     public function __construct(
         protected SystemPromptBuilder $promptBuilder,
         protected MemorySearchService $memorySearchService,
+        protected DocumentSearchService $documentSearchService,
     ) {}
 
     /**
@@ -27,6 +29,12 @@ class ContextAssembler
         $memoryContext = $this->buildMemoryContext($session, $message);
         if ($memoryContext) {
             $systemPrompt .= "\n\n---\n\n".$memoryContext;
+        }
+
+        // Append relevant document context (from #filename mentions or general search)
+        $documentContext = $this->buildDocumentContext($session, $message);
+        if ($documentContext) {
+            $systemPrompt .= "\n\n---\n\n".$documentContext;
         }
 
         $messages = [];
@@ -57,6 +65,89 @@ class ContextAssembler
             'system' => $systemPrompt,
             'messages' => $messages,
         ];
+    }
+
+    /**
+     * Build minimal context for code models — conversation history only, no agent system prompt.
+     *
+     * @return array{system: string, messages: array}
+     */
+    public function buildMinimal(AgentSession $session, IncomingMessage $message): array
+    {
+        $messages = [];
+
+        // Conversation history only
+        foreach ($session->messages()->limit(config('agent.max_conversation_messages', 100))->get() as $msg) {
+            $messages[] = [
+                'role' => $msg->role,
+                'content' => $msg->content,
+            ];
+        }
+
+        $messages[] = [
+            'role' => 'user',
+            'content' => $message->content,
+        ];
+
+        return [
+            'system' => 'You are a helpful coding assistant. Be concise.',
+            'messages' => $messages,
+        ];
+    }
+
+    /**
+     * Search for relevant document chunks and format as context section.
+     * Parses #filename mentions for targeted search, falls back to general search.
+     */
+    protected function buildDocumentContext(AgentSession $session, IncomingMessage $message): ?string
+    {
+        if (! $session->user_id) {
+            return null;
+        }
+
+        try {
+            // Parse #filename mentions from message
+            preg_match_all('/#(\S+\.\w+)/', $message->content, $matches);
+            $mentionedFiles = $matches[1] ?? [];
+
+            $allChunks = collect();
+
+            if (! empty($mentionedFiles)) {
+                // Search within each mentioned file
+                foreach ($mentionedFiles as $filename) {
+                    $chunks = $this->documentSearchService->search(
+                        query: $message->content,
+                        userId: $session->user_id,
+                        limit: 3,
+                        filename: $filename,
+                    );
+                    $allChunks = $allChunks->merge($chunks);
+                }
+            } else {
+                // General document search
+                $allChunks = $this->documentSearchService->search(
+                    query: $message->content,
+                    userId: $session->user_id,
+                    limit: 5,
+                );
+            }
+
+            if ($allChunks->isEmpty()) {
+                return null;
+            }
+
+            $formatted = $allChunks->map(function ($chunk) {
+                return "### {$chunk->filename} (chunk {$chunk->chunk_index})\n{$chunk->chunk_content}";
+            })->implode("\n\n");
+
+            return "## Relevant Documents\n\n{$formatted}";
+        } catch (\Throwable $e) {
+            Log::warning('ContextAssembler: document search failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**

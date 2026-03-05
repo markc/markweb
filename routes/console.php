@@ -2,6 +2,8 @@
 
 use App\DTOs\AmpMessage;
 use App\Events\MeshNodesUpdated;
+use App\Jobs\Chat\ChatBraneIndexJob;
+use App\Jobs\Chat\ChatDecisionExtractJob;
 use App\Services\Mesh\MeshBridgeService;
 use App\Services\Mesh\MeshNodeCache;
 use Illuminate\Foundation\Inspiring;
@@ -145,3 +147,9 @@ Schedule::call(function () {
         // meshd not running or unreachable — silent
     }
 })->everyMinute()->name('mesh:sync-from-meshd');
+
+// Chat: Brane auto-indexing — batch index chat messages every 15 minutes
+Schedule::job(new ChatBraneIndexJob)->everyFifteenMinutes()->name('chat:brane-index');
+
+// Chat: Decision extraction — daily summary of chat decisions
+Schedule::job(new ChatDecisionExtractJob)->dailyAt('02:00')->name('chat:decision-extract');

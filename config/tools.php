@@ -17,7 +17,7 @@ return [
             'sandbox' => 'none',
         ],
         'standard' => [
-            'allowed' => ['current_datetime', 'http_request'],
+            'allowed' => ['current_datetime', 'http_request', 'web_search'],
             'denied' => ['bash'],
             'sandbox' => 'restricted',
         ],
@@ -26,6 +26,17 @@ return [
             'denied' => ['*'],
             'sandbox' => 'docker',
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Web Search (Brave Search API)
+    |--------------------------------------------------------------------------
+    */
+
+    'web_search' => [
+        'api_key' => env('BRAVE_SEARCH_API_KEY'),
+        'max_results' => 5,
     ],
 
     /*

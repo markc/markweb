@@ -9,6 +9,7 @@ use App\Services\Tools\BuiltIn\BashTool;
 use App\Services\Tools\BuiltIn\CurrentDateTimeTool;
 use App\Services\Tools\BuiltIn\HttpRequestTool;
 use App\Services\Tools\BuiltIn\SandboxedBashTool;
+use App\Services\Tools\BuiltIn\WebSearchTool;
 use Laravel\Ai\Contracts\Tool;
 
 class ToolResolver
@@ -27,6 +28,7 @@ class ToolResolver
         return [
             'current_datetime' => CurrentDateTimeTool::class,
             'http_request' => HttpRequestTool::class,
+            'web_search' => WebSearchTool::class,
             'bash' => $bashClass,
         ];
     }

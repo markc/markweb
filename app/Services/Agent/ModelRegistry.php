@@ -2,11 +2,17 @@
 
 namespace App\Services\Agent;
 
+use App\Services\Ollama\OllamaChatService;
+
 class ModelRegistry
 {
+    public function __construct(
+        protected OllamaChatService $ollamaChatService,
+    ) {}
+
     /**
      * Get available models grouped by provider.
-     * Only includes providers with configured API keys.
+     * Only includes providers with configured API keys (+ Ollama if reachable).
      */
     public function getAvailableModels(): array
     {
@@ -24,6 +30,12 @@ class ModelRegistry
                     'provider' => $provider,
                 ])->values()->all();
             }
+        }
+
+        // Add Ollama models if service is reachable
+        $ollamaModels = $this->getOllamaModels();
+        if (! empty($ollamaModels)) {
+            $available['ollama'] = $ollamaModels;
         }
 
         return $available;
@@ -57,6 +69,26 @@ class ModelRegistry
             }
         }
 
+        // Check Ollama models
+        $ollamaModels = $this->ollamaChatService->getAvailableModels();
+        if (array_key_exists($modelId, $ollamaModels)) {
+            return 'ollama';
+        }
+
         return null;
+    }
+
+    /**
+     * Get Ollama models formatted for the registry.
+     */
+    public function getOllamaModels(): array
+    {
+        $models = $this->ollamaChatService->getAvailableModels();
+
+        return collect($models)->map(fn ($name, $id) => [
+            'id' => $id,
+            'name' => $name,
+            'provider' => 'ollama',
+        ])->values()->all();
     }
 }

@@ -20,6 +20,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('chat/send', [App\Http\Controllers\Agent\ChatController::class, 'send'])->name('chat.send');
     Route::delete('chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'destroy'])->name('chat.destroy');
     Route::patch('chat/{agentSession}', [App\Http\Controllers\Agent\ChatController::class, 'update'])->name('chat.update');
+    Route::post('chat/documents', [App\Http\Controllers\Agent\ChatController::class, 'uploadDocument'])->name('chat.documents.upload');
+    Route::get('chat/documents', [App\Http\Controllers\Agent\ChatController::class, 'documents'])->name('chat.documents.index');
+    Route::delete('chat/documents/{filename}', [App\Http\Controllers\Agent\ChatController::class, 'deleteDocument'])->name('chat.documents.destroy');
+    Route::post('chat/{agentSession}/share', [App\Http\Controllers\SharedChatController::class, 'share'])->name('chat.share');
+    Route::delete('chat/{agentSession}/share', [App\Http\Controllers\SharedChatController::class, 'unshare'])->name('chat.unshare');
+    Route::get('chat/{agentSession}/export', [App\Http\Controllers\Agent\ChatController::class, 'export'])->name('chat.export');
+    Route::post('chat/{agentSession}/fork', [App\Http\Controllers\Agent\ChatController::class, 'fork'])->name('chat.fork');
 
     // Legacy SSE chat routes (Prism-based streaming)
     Route::get('sse-chat', [App\Http\Controllers\ChatController::class, 'index'])->name('sse-chat.index');
@@ -34,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('templates', [App\Http\Controllers\SystemPromptTemplateController::class, 'store'])->name('templates.store');
     Route::put('templates/{template}', [App\Http\Controllers\SystemPromptTemplateController::class, 'update'])->name('templates.update');
     Route::delete('templates/{template}', [App\Http\Controllers\SystemPromptTemplateController::class, 'destroy'])->name('templates.destroy');
+
+    Route::resource('workspace/agents', App\Http\Controllers\AgentController::class)->names('agents');
 
     Route::get('docs', [App\Http\Controllers\DocsController::class, 'index'])->name('docs.index');
     Route::get('docs/{slug}', [App\Http\Controllers\DocsController::class, 'show'])->name('docs.show');
@@ -67,6 +76,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('addressbooks/{addressbook}/contacts/{contact}', [App\Http\Controllers\ContactController::class, 'update'])->name('contacts.update');
     Route::delete('addressbooks/{addressbook}/contacts/{contact}', [App\Http\Controllers\ContactController::class, 'destroy'])->name('contacts.destroy');
     Route::post('addressbooks/{addressbook}/contacts/bulk-delete', [App\Http\Controllers\ContactController::class, 'bulkDestroy'])->name('contacts.bulk-destroy');
+
+    // Text Chat routes (user-to-user Slack-like chat)
+    Route::prefix('text-chat')->name('text-chat.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Chat\ChatChannelController::class, 'index'])->name('index');
+        Route::post('/channels', [App\Http\Controllers\Chat\ChatChannelController::class, 'store'])->name('channels.store');
+        Route::get('/{channel:slug}', [App\Http\Controllers\Chat\ChatChannelController::class, 'show'])->name('show');
+        Route::post('/{channel:slug}/join', [App\Http\Controllers\Chat\ChatChannelController::class, 'join'])->name('join');
+        Route::post('/{channel:slug}/leave', [App\Http\Controllers\Chat\ChatChannelController::class, 'leave'])->name('leave');
+
+        Route::get('/{channel:slug}/messages', [App\Http\Controllers\Chat\ChatMessageController::class, 'index'])->name('messages.index');
+        Route::post('/{channel:slug}/messages', [App\Http\Controllers\Chat\ChatMessageController::class, 'store'])->name('messages.store');
+        Route::patch('/messages/{message}', [App\Http\Controllers\Chat\ChatMessageController::class, 'update'])->name('messages.update');
+        Route::delete('/messages/{message}', [App\Http\Controllers\Chat\ChatMessageController::class, 'destroy'])->name('messages.destroy');
+
+        // Reactions
+        Route::post('/messages/{message}/react', [App\Http\Controllers\Chat\ChatMessageController::class, 'react'])->name('messages.react');
+        Route::delete('/messages/{message}/react', [App\Http\Controllers\Chat\ChatMessageController::class, 'unreact'])->name('messages.unreact');
+
+        // Typing indicator
+        Route::post('/{channel:slug}/typing', [App\Http\Controllers\Chat\ChatMessageController::class, 'typing'])->name('typing');
+    });
 });
 
 // Well-known discovery endpoints
@@ -74,7 +104,8 @@ Route::get('/.well-known/agent.json', [App\Http\Controllers\AgentCardController:
 Route::redirect('/.well-known/caldav', '/dav/', 301);
 Route::redirect('/.well-known/carddav', '/dav/', 301);
 
-// Public share link (no auth)
+// Public share links (no auth)
 Route::get('share/{token}', [App\Http\Controllers\ShareController::class, 'show'])->name('share.show');
+Route::get('s/{token}', [App\Http\Controllers\SharedChatController::class, 'show'])->name('shared-chat.show');
 
 require __DIR__.'/settings.php';

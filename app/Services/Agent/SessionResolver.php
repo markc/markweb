@@ -15,7 +15,7 @@ class SessionResolver
             ? $message->metadata['trust_level']
             : config("channels.{$message->channel}.trust_level", 'standard');
 
-        return AgentSession::firstOrCreate(
+        $session = AgentSession::firstOrCreate(
             ['session_key' => $message->sessionKey],
             [
                 'agent_id' => $this->resolveAgent($message)->id,
@@ -28,6 +28,20 @@ class SessionResolver
                 'system_prompt' => $message->systemPrompt,
             ]
         );
+
+        // Sync provider/model if the message overrides them (e.g. /model switch in TUI)
+        $updates = [];
+        if ($message->provider && $session->provider !== $message->provider) {
+            $updates['provider'] = $message->provider;
+        }
+        if ($message->model && $session->model !== $message->model) {
+            $updates['model'] = $message->model;
+        }
+        if (! empty($updates)) {
+            $session->update($updates);
+        }
+
+        return $session;
     }
 
     public function resolveOrFail(string $sessionKey): AgentSession
@@ -37,6 +51,14 @@ class SessionResolver
 
     protected function resolveAgent(IncomingMessage $message): Agent
     {
+        // Support explicit agent_id from metadata (e.g., from agent selector in UI)
+        if (isset($message->metadata['agent_id'])) {
+            $agent = Agent::find($message->metadata['agent_id']);
+            if ($agent) {
+                return $agent;
+            }
+        }
+
         return Agent::where('is_default', true)->first()
             ?? Agent::firstOrCreate(
                 ['slug' => 'default'],

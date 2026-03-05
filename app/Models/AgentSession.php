@@ -24,6 +24,7 @@ class AgentSession extends Model
         'model',
         'provider',
         'system_prompt',
+        'share_token',
         'state',
         'compacted_summary',
         'last_activity_at',

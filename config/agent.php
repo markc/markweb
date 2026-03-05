@@ -75,6 +75,19 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    'ollama_host' => env('OLLAMA_HOST', 'http://192.168.2.130:11434'),
+
+    'ollama_hosts' => [
+        'local' => [
+            'url' => 'http://127.0.0.1:11434',
+            'label' => 'Local (cachyos)',
+        ],
+        'pve3' => [
+            'url' => 'http://192.168.2.130:11434',
+            'label' => 'pve3 (i9-13900H)',
+        ],
+    ],
+
     'workspace_path' => storage_path('app/agent'),
 
     /*

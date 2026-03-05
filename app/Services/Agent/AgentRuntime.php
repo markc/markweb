@@ -8,6 +8,7 @@ use App\Events\SessionUpdated;
 use App\Listeners\LogToolExecution;
 use App\Models\AgentMessage;
 use App\Models\AgentSession;
+use App\Services\Ollama\OllamaChatService;
 use App\Services\Tools\ToolResolver;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,7 @@ class AgentRuntime
         protected ContextAssembler $contextAssembler,
         protected ToolResolver $toolResolver,
         protected IntentRouter $intentRouter,
+        protected OllamaChatService $ollamaChatService,
     ) {}
 
     /**
@@ -53,21 +55,37 @@ class AgentRuntime
             'sender' => $message->sender,
         ]);
 
-        $context = $this->contextAssembler->build($session, $message);
-        $agent = $this->buildAgent($context, $session);
+        $model = $session->getEffectiveModel();
+        $isCodeModel = OllamaChatService::isCodeModel($model);
+
+        // Code models get minimal context — no agent system prompt, just conversation history
+        $context = $isCodeModel
+            ? $this->contextAssembler->buildMinimal($session, $message)
+            : $this->contextAssembler->build($session, $message);
 
         try {
-            $response = $agent->prompt(
-                prompt: $message->content,
-                provider: $session->getEffectiveProvider(),
-                model: $session->getEffectiveModel(),
-            );
+            if ($session->getEffectiveProvider() === 'ollama') {
+                $ollamaMessages = $this->buildOllamaMessages($context['messages']);
+                $responseText = $this->ollamaChatService->chat(
+                    $model,
+                    $ollamaMessages,
+                    $context['system'],
+                );
+                $usage = [];
+            } else {
+                $agent = $this->buildAgent($context, $session);
+                $response = $agent->prompt(
+                    prompt: $message->content,
+                    provider: $session->getEffectiveProvider(),
+                    model: $session->getEffectiveModel(),
+                );
 
-            $responseText = $response->text;
-            $usage = [
-                'input_tokens' => $response->usage?->inputTokens ?? 0,
-                'output_tokens' => $response->usage?->outputTokens ?? 0,
-            ];
+                $responseText = $response->text;
+                $usage = [
+                    'input_tokens' => $response->usage?->inputTokens ?? 0,
+                    'output_tokens' => $response->usage?->outputTokens ?? 0,
+                ];
+            }
         } catch (\Throwable $e) {
             Log::error('AgentRuntime: AI invocation failed', [
                 'session' => $session->session_key,
@@ -171,31 +189,60 @@ class AgentRuntime
             'sender' => $message->sender,
         ]);
 
-        $context = $this->contextAssembler->build($session, $message);
-        $agent = $this->buildAgent($context, $session);
+        $model = $session->getEffectiveModel();
+        $isCodeModel = OllamaChatService::isCodeModel($model);
+
+        $context = $isCodeModel
+            ? $this->contextAssembler->buildMinimal($session, $message)
+            : $this->contextAssembler->build($session, $message);
 
         // Pusher channel names cannot contain colons — replace with dots
-        // Use plain Channel with 'private-' prefix already included to avoid
-        // double-prefix bug: SDK's StreamEvent::broadcast() calls Broadcast::private()
-        // which wraps in PrivateChannel again, producing 'private-private-...'
         $channelKey = str_replace(':', '.', $message->sessionKey);
         $channel = new Channel('private-chat.session.'.$channelKey);
 
-        $stream = $agent->broadcastNow(
-            prompt: $message->content,
-            channels: [$channel],
-            provider: $session->getEffectiveProvider(),
-            model: $session->getEffectiveModel(),
-        );
+        if ($session->getEffectiveProvider() === 'ollama') {
+            $ollamaMessages = $this->buildOllamaMessages($context['messages']);
 
-        // After .each() in broadcastNow completes, text + usage are populated
-        $this->saveMessage($session, 'assistant', $stream->text ?? '', [
-            'provider' => $session->getEffectiveProvider(),
-            'model' => $session->getEffectiveModel(),
-        ], [
-            'input_tokens' => $stream->usage?->inputTokens ?? 0,
-            'output_tokens' => $stream->usage?->outputTokens ?? 0,
-        ]);
+            broadcast(new \App\Events\StreamEnd($channel, 'stream_start'))->toOthers();
+
+            $result = $this->ollamaChatService->streamChat(
+                $session->getEffectiveModel(),
+                $ollamaMessages,
+                function (string $token) use ($channel) {
+                    broadcast(new \App\Events\StreamEnd($channel, 'text_delta', ['delta' => $token]))->toOthers();
+                },
+                $context['system'],
+            );
+
+            broadcast(new \App\Events\StreamEnd($channel, 'stream_end'))->toOthers();
+
+            $this->saveMessage($session, 'assistant', $result['text'], [
+                'provider' => 'ollama',
+                'model' => $session->getEffectiveModel(),
+                'tokens_per_sec' => $result['tokens_per_sec'],
+            ]);
+        } else {
+            $agent = $this->buildAgent($context, $session);
+
+            // Use plain Channel with 'private-' prefix already included to avoid
+            // double-prefix bug: SDK's StreamEvent::broadcast() calls Broadcast::private()
+            // which wraps in PrivateChannel again, producing 'private-private-...'
+            $stream = $agent->broadcastNow(
+                prompt: $message->content,
+                channels: [$channel],
+                provider: $session->getEffectiveProvider(),
+                model: $session->getEffectiveModel(),
+            );
+
+            // After .each() in broadcastNow completes, text + usage are populated
+            $this->saveMessage($session, 'assistant', $stream->text ?? '', [
+                'provider' => $session->getEffectiveProvider(),
+                'model' => $session->getEffectiveModel(),
+            ], [
+                'input_tokens' => $stream->usage?->inputTokens ?? 0,
+                'output_tokens' => $stream->usage?->outputTokens ?? 0,
+            ]);
+        }
 
         $session->update(['last_activity_at' => now()]);
         $this->maybeGenerateTitle($session);
@@ -249,6 +296,76 @@ class AgentRuntime
             'meta' => $meta,
             'usage' => $usage,
         ]);
+    }
+
+    /**
+     * Stream an Ollama response directly (for TUI token-by-token output).
+     */
+    public function streamOllama(IncomingMessage $message, callable $onToken): array
+    {
+        $session = $this->sessionResolver->resolve($message);
+
+        // Check intent router for slash commands
+        $intent = $this->intentRouter->classify($message, $session);
+        if ($intent->isShortCircuit()) {
+            $this->saveMessage($session, 'user', $message->content, [
+                'channel' => $message->channel,
+                'sender' => $message->sender,
+            ]);
+            $this->saveMessage($session, 'assistant', $intent->response, [
+                'intent' => $intent->type->value,
+                'command' => $intent->commandName,
+            ]);
+            $session->update(['last_activity_at' => now()]);
+
+            // Emit intent response as a single token
+            $onToken($intent->response);
+
+            return ['text' => $intent->response, 'eval_count' => 0, 'tokens_per_sec' => 0.0];
+        }
+
+        $this->saveMessage($session, 'user', $message->content, [
+            'channel' => $message->channel,
+            'sender' => $message->sender,
+        ]);
+
+        $model = $session->getEffectiveModel();
+        $isCodeModel = OllamaChatService::isCodeModel($model);
+
+        $context = $isCodeModel
+            ? $this->contextAssembler->buildMinimal($session, $message)
+            : $this->contextAssembler->build($session, $message);
+
+        $ollamaMessages = $this->buildOllamaMessages($context['messages']);
+
+        $result = $this->ollamaChatService->streamChat(
+            $model,
+            $ollamaMessages,
+            $onToken,
+            $context['system'],
+        );
+
+        $this->saveMessage($session, 'assistant', $result['text'], [
+            'provider' => 'ollama',
+            'model' => $session->getEffectiveModel(),
+            'tokens_per_sec' => $result['tokens_per_sec'],
+        ]);
+
+        $session->update(['last_activity_at' => now()]);
+        $this->maybeGenerateTitle($session);
+
+        return $result;
+    }
+
+    /**
+     * Convert context messages to Ollama format (role + content arrays).
+     */
+    protected function buildOllamaMessages(array $messages): array
+    {
+        return array_map(fn ($m) => [
+            'role' => $m['role'],
+            'content' => $m['content'],
+        ], $messages);
     }
 
     protected function maybeGenerateTitle(AgentSession $session): void
