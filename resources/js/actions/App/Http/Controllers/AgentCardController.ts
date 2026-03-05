@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AgentCardController::show
 * @see app/Http/Controllers/AgentCardController.php:12
@@ -42,43 +42,6 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(options),
     method: 'head',
 })
-
-/**
-* @see \App\Http\Controllers\AgentCardController::show
-* @see app/Http/Controllers/AgentCardController.php:12
-* @route '/.well-known/agent.json'
-*/
-const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: show.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AgentCardController::show
-* @see app/Http/Controllers/AgentCardController.php:12
-* @route '/.well-known/agent.json'
-*/
-showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: show.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AgentCardController::show
-* @see app/Http/Controllers/AgentCardController.php:12
-* @route '/.well-known/agent.json'
-*/
-showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: show.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-show.form = showForm
 
 const AgentCardController = { show }
 

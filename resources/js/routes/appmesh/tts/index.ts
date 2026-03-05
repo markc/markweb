@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AppMeshController::voices
 * @see app/Http/Controllers/AppMeshController.php:170
@@ -44,43 +44,6 @@ voices.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::voices
-* @see app/Http/Controllers/AppMeshController.php:170
-* @route '/api/appmesh/tts/voices'
-*/
-const voicesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: voices.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::voices
-* @see app/Http/Controllers/AppMeshController.php:170
-* @route '/api/appmesh/tts/voices'
-*/
-voicesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: voices.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::voices
-* @see app/Http/Controllers/AppMeshController.php:170
-* @route '/api/appmesh/tts/voices'
-*/
-voicesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: voices.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-voices.form = voicesForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::generate
 * @see app/Http/Controllers/AppMeshController.php:180
 * @route '/api/appmesh/tts/generate'
@@ -113,28 +76,6 @@ generate.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: generate.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::generate
-* @see app/Http/Controllers/AppMeshController.php:180
-* @route '/api/appmesh/tts/generate'
-*/
-const generateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: generate.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::generate
-* @see app/Http/Controllers/AppMeshController.php:180
-* @route '/api/appmesh/tts/generate'
-*/
-generateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: generate.url(options),
-    method: 'post',
-})
-
-generate.form = generateForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::play
@@ -181,43 +122,6 @@ play.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::play
-* @see app/Http/Controllers/AppMeshController.php:200
-* @route '/api/appmesh/tts/play'
-*/
-const playForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: play.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::play
-* @see app/Http/Controllers/AppMeshController.php:200
-* @route '/api/appmesh/tts/play'
-*/
-playForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: play.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::play
-* @see app/Http/Controllers/AppMeshController.php:200
-* @route '/api/appmesh/tts/play'
-*/
-playForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: play.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-play.form = playForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::tutorial
 * @see app/Http/Controllers/AppMeshController.php:220
 * @route '/api/appmesh/tts/tutorial'
@@ -250,28 +154,6 @@ tutorial.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: tutorial.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tutorial
-* @see app/Http/Controllers/AppMeshController.php:220
-* @route '/api/appmesh/tts/tutorial'
-*/
-const tutorialForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorial.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tutorial
-* @see app/Http/Controllers/AppMeshController.php:220
-* @route '/api/appmesh/tts/tutorial'
-*/
-tutorialForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorial.url(options),
-    method: 'post',
-})
-
-tutorial.form = tutorialForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::tutorialFull
@@ -308,28 +190,6 @@ tutorialFull.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::tutorialFull
-* @see app/Http/Controllers/AppMeshController.php:236
-* @route '/api/appmesh/tts/tutorial-full'
-*/
-const tutorialFullForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorialFull.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tutorialFull
-* @see app/Http/Controllers/AppMeshController.php:236
-* @route '/api/appmesh/tts/tutorial-full'
-*/
-tutorialFullForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorialFull.url(options),
-    method: 'post',
-})
-
-tutorialFull.form = tutorialFullForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::record
 * @see app/Http/Controllers/AppMeshController.php:256
 * @route '/api/appmesh/tts/record'
@@ -362,28 +222,6 @@ record.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: record.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::record
-* @see app/Http/Controllers/AppMeshController.php:256
-* @route '/api/appmesh/tts/record'
-*/
-const recordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: record.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::record
-* @see app/Http/Controllers/AppMeshController.php:256
-* @route '/api/appmesh/tts/record'
-*/
-recordForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: record.url(options),
-    method: 'post',
-})
-
-record.form = recordForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::combine
@@ -419,24 +257,3 @@ combine.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
-/**
-* @see \App\Http\Controllers\AppMeshController::combine
-* @see app/Http/Controllers/AppMeshController.php:274
-* @route '/api/appmesh/tts/combine'
-*/
-const combineForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: combine.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::combine
-* @see app/Http/Controllers/AppMeshController.php:274
-* @route '/api/appmesh/tts/combine'
-*/
-combineForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: combine.url(options),
-    method: 'post',
-})
-
-combine.form = combineForm

@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AppMeshController::tools
 * @see app/Http/Controllers/AppMeshController.php:56
@@ -44,43 +44,6 @@ tools.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::tools
-* @see app/Http/Controllers/AppMeshController.php:56
-* @route '/api/appmesh/tools'
-*/
-const toolsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tools.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tools
-* @see app/Http/Controllers/AppMeshController.php:56
-* @route '/api/appmesh/tools'
-*/
-toolsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tools.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tools
-* @see app/Http/Controllers/AppMeshController.php:56
-* @route '/api/appmesh/tools'
-*/
-toolsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tools.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-tools.form = toolsForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::execute
 * @see app/Http/Controllers/AppMeshController.php:64
 * @route '/api/appmesh/execute'
@@ -115,28 +78,6 @@ execute.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::execute
-* @see app/Http/Controllers/AppMeshController.php:64
-* @route '/api/appmesh/execute'
-*/
-const executeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: execute.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::execute
-* @see app/Http/Controllers/AppMeshController.php:64
-* @route '/api/appmesh/execute'
-*/
-executeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: execute.url(options),
-    method: 'post',
-})
-
-execute.form = executeForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::portExecute
 * @see app/Http/Controllers/AppMeshController.php:82
 * @route '/api/appmesh/port'
@@ -169,28 +110,6 @@ portExecute.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: portExecute.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::portExecute
-* @see app/Http/Controllers/AppMeshController.php:82
-* @route '/api/appmesh/port'
-*/
-const portExecuteForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: portExecute.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::portExecute
-* @see app/Http/Controllers/AppMeshController.php:82
-* @route '/api/appmesh/port'
-*/
-portExecuteForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: portExecute.url(options),
-    method: 'post',
-})
-
-portExecute.form = portExecuteForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::dbusServices
@@ -237,43 +156,6 @@ dbusServices.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::dbusServices
-* @see app/Http/Controllers/AppMeshController.php:102
-* @route '/api/appmesh/dbus/services'
-*/
-const dbusServicesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: dbusServices.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::dbusServices
-* @see app/Http/Controllers/AppMeshController.php:102
-* @route '/api/appmesh/dbus/services'
-*/
-dbusServicesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: dbusServices.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::dbusServices
-* @see app/Http/Controllers/AppMeshController.php:102
-* @route '/api/appmesh/dbus/services'
-*/
-dbusServicesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: dbusServices.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-dbusServices.form = dbusServicesForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::dbusIntrospect
 * @see app/Http/Controllers/AppMeshController.php:114
 * @route '/api/appmesh/dbus/introspect'
@@ -306,28 +188,6 @@ dbusIntrospect.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
     url: dbusIntrospect.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::dbusIntrospect
-* @see app/Http/Controllers/AppMeshController.php:114
-* @route '/api/appmesh/dbus/introspect'
-*/
-const dbusIntrospectForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: dbusIntrospect.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::dbusIntrospect
-* @see app/Http/Controllers/AppMeshController.php:114
-* @route '/api/appmesh/dbus/introspect'
-*/
-dbusIntrospectForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: dbusIntrospect.url(options),
-    method: 'post',
-})
-
-dbusIntrospect.form = dbusIntrospectForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::midiPorts
@@ -374,43 +234,6 @@ midiPorts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::midiPorts
-* @see app/Http/Controllers/AppMeshController.php:133
-* @route '/api/appmesh/midi/ports'
-*/
-const midiPortsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midiPorts.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midiPorts
-* @see app/Http/Controllers/AppMeshController.php:133
-* @route '/api/appmesh/midi/ports'
-*/
-midiPortsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midiPorts.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midiPorts
-* @see app/Http/Controllers/AppMeshController.php:133
-* @route '/api/appmesh/midi/ports'
-*/
-midiPortsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midiPorts.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-midiPorts.form = midiPortsForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::midiConnect
 * @see app/Http/Controllers/AppMeshController.php:147
 * @route '/api/appmesh/midi/connect'
@@ -443,28 +266,6 @@ midiConnect.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: midiConnect.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midiConnect
-* @see app/Http/Controllers/AppMeshController.php:147
-* @route '/api/appmesh/midi/connect'
-*/
-const midiConnectForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: midiConnect.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midiConnect
-* @see app/Http/Controllers/AppMeshController.php:147
-* @route '/api/appmesh/midi/connect'
-*/
-midiConnectForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: midiConnect.url(options),
-    method: 'post',
-})
-
-midiConnect.form = midiConnectForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::ttsVoices
@@ -511,43 +312,6 @@ ttsVoices.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::ttsVoices
-* @see app/Http/Controllers/AppMeshController.php:170
-* @route '/api/appmesh/tts/voices'
-*/
-const ttsVoicesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: ttsVoices.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::ttsVoices
-* @see app/Http/Controllers/AppMeshController.php:170
-* @route '/api/appmesh/tts/voices'
-*/
-ttsVoicesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: ttsVoices.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::ttsVoices
-* @see app/Http/Controllers/AppMeshController.php:170
-* @route '/api/appmesh/tts/voices'
-*/
-ttsVoicesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: ttsVoices.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-ttsVoices.form = ttsVoicesForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::ttsGenerate
 * @see app/Http/Controllers/AppMeshController.php:180
 * @route '/api/appmesh/tts/generate'
@@ -580,28 +344,6 @@ ttsGenerate.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: ttsGenerate.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::ttsGenerate
-* @see app/Http/Controllers/AppMeshController.php:180
-* @route '/api/appmesh/tts/generate'
-*/
-const ttsGenerateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: ttsGenerate.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::ttsGenerate
-* @see app/Http/Controllers/AppMeshController.php:180
-* @route '/api/appmesh/tts/generate'
-*/
-ttsGenerateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: ttsGenerate.url(options),
-    method: 'post',
-})
-
-ttsGenerate.form = ttsGenerateForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::ttsPlay
@@ -648,43 +390,6 @@ ttsPlay.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::ttsPlay
-* @see app/Http/Controllers/AppMeshController.php:200
-* @route '/api/appmesh/tts/play'
-*/
-const ttsPlayForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: ttsPlay.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::ttsPlay
-* @see app/Http/Controllers/AppMeshController.php:200
-* @route '/api/appmesh/tts/play'
-*/
-ttsPlayForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: ttsPlay.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::ttsPlay
-* @see app/Http/Controllers/AppMeshController.php:200
-* @route '/api/appmesh/tts/play'
-*/
-ttsPlayForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: ttsPlay.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-ttsPlay.form = ttsPlayForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::tutorialScript
 * @see app/Http/Controllers/AppMeshController.php:220
 * @route '/api/appmesh/tts/tutorial'
@@ -717,28 +422,6 @@ tutorialScript.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
     url: tutorialScript.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tutorialScript
-* @see app/Http/Controllers/AppMeshController.php:220
-* @route '/api/appmesh/tts/tutorial'
-*/
-const tutorialScriptForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorialScript.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tutorialScript
-* @see app/Http/Controllers/AppMeshController.php:220
-* @route '/api/appmesh/tts/tutorial'
-*/
-tutorialScriptForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorialScript.url(options),
-    method: 'post',
-})
-
-tutorialScript.form = tutorialScriptForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::tutorialFull
@@ -775,28 +458,6 @@ tutorialFull.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::tutorialFull
-* @see app/Http/Controllers/AppMeshController.php:236
-* @route '/api/appmesh/tts/tutorial-full'
-*/
-const tutorialFullForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorialFull.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tutorialFull
-* @see app/Http/Controllers/AppMeshController.php:236
-* @route '/api/appmesh/tts/tutorial-full'
-*/
-tutorialFullForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: tutorialFull.url(options),
-    method: 'post',
-})
-
-tutorialFull.form = tutorialFullForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::screenRecord
 * @see app/Http/Controllers/AppMeshController.php:256
 * @route '/api/appmesh/tts/record'
@@ -831,28 +492,6 @@ screenRecord.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::screenRecord
-* @see app/Http/Controllers/AppMeshController.php:256
-* @route '/api/appmesh/tts/record'
-*/
-const screenRecordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: screenRecord.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::screenRecord
-* @see app/Http/Controllers/AppMeshController.php:256
-* @route '/api/appmesh/tts/record'
-*/
-screenRecordForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: screenRecord.url(options),
-    method: 'post',
-})
-
-screenRecord.form = screenRecordForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::videoCombine
 * @see app/Http/Controllers/AppMeshController.php:274
 * @route '/api/appmesh/tts/combine'
@@ -885,28 +524,6 @@ videoCombine.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: videoCombine.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::videoCombine
-* @see app/Http/Controllers/AppMeshController.php:274
-* @route '/api/appmesh/tts/combine'
-*/
-const videoCombineForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: videoCombine.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::videoCombine
-* @see app/Http/Controllers/AppMeshController.php:274
-* @route '/api/appmesh/tts/combine'
-*/
-videoCombineForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: videoCombine.url(options),
-    method: 'post',
-})
-
-videoCombine.form = videoCombineForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::index
@@ -953,43 +570,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::index
-* @see app/Http/Controllers/AppMeshController.php:21
-* @route '/appmesh'
-*/
-const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::index
-* @see app/Http/Controllers/AppMeshController.php:21
-* @route '/appmesh'
-*/
-indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::index
-* @see app/Http/Controllers/AppMeshController.php:21
-* @route '/appmesh'
-*/
-indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-index.form = indexForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::explore
 * @see app/Http/Controllers/AppMeshController.php:32
 * @route '/appmesh/explore'
@@ -1032,43 +612,6 @@ explore.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: explore.url(options),
     method: 'head',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::explore
-* @see app/Http/Controllers/AppMeshController.php:32
-* @route '/appmesh/explore'
-*/
-const exploreForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: explore.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::explore
-* @see app/Http/Controllers/AppMeshController.php:32
-* @route '/appmesh/explore'
-*/
-exploreForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: explore.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::explore
-* @see app/Http/Controllers/AppMeshController.php:32
-* @route '/appmesh/explore'
-*/
-exploreForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: explore.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-explore.form = exploreForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::midi
@@ -1115,43 +658,6 @@ midi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::midi
-* @see app/Http/Controllers/AppMeshController.php:40
-* @route '/appmesh/midi'
-*/
-const midiForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midi.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midi
-* @see app/Http/Controllers/AppMeshController.php:40
-* @route '/appmesh/midi'
-*/
-midiForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midi.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midi
-* @see app/Http/Controllers/AppMeshController.php:40
-* @route '/appmesh/midi'
-*/
-midiForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midi.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-midi.form = midiForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::tts
 * @see app/Http/Controllers/AppMeshController.php:48
 * @route '/appmesh/tts'
@@ -1194,43 +700,6 @@ tts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: tts.url(options),
     method: 'head',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tts
-* @see app/Http/Controllers/AppMeshController.php:48
-* @route '/appmesh/tts'
-*/
-const ttsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tts.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tts
-* @see app/Http/Controllers/AppMeshController.php:48
-* @route '/appmesh/tts'
-*/
-ttsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tts.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tts
-* @see app/Http/Controllers/AppMeshController.php:48
-* @route '/appmesh/tts'
-*/
-ttsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tts.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-tts.form = ttsForm
 
 const AppMeshController = { tools, execute, portExecute, dbusServices, dbusIntrospect, midiPorts, midiConnect, ttsVoices, ttsGenerate, ttsPlay, tutorialScript, tutorialFull, screenRecord, videoCombine, index, explore, midi, tts }
 

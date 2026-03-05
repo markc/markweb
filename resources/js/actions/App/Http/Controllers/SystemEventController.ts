@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SystemEventController::index
 * @see app/Http/Controllers/SystemEventController.php:17
@@ -44,43 +44,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\SystemEventController::index
-* @see app/Http/Controllers/SystemEventController.php:17
-* @route '/api/system-events'
-*/
-const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::index
-* @see app/Http/Controllers/SystemEventController.php:17
-* @route '/api/system-events'
-*/
-indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::index
-* @see app/Http/Controllers/SystemEventController.php:17
-* @route '/api/system-events'
-*/
-indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-index.form = indexForm
-
-/**
 * @see \App\Http\Controllers\SystemEventController::store
 * @see app/Http/Controllers/SystemEventController.php:31
 * @route '/api/system-events'
@@ -113,28 +76,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\SystemEventController::store
-* @see app/Http/Controllers/SystemEventController.php:31
-* @route '/api/system-events'
-*/
-const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::store
-* @see app/Http/Controllers/SystemEventController.php:31
-* @route '/api/system-events'
-*/
-storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(options),
-    method: 'post',
-})
-
-store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\SystemEventController::markAllRead
@@ -171,28 +112,6 @@ markAllRead.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\SystemEventController::markAllRead
-* @see app/Http/Controllers/SystemEventController.php:66
-* @route '/api/system-events/read-all'
-*/
-const markAllReadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: markAllRead.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::markAllRead
-* @see app/Http/Controllers/SystemEventController.php:66
-* @route '/api/system-events/read-all'
-*/
-markAllReadForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: markAllRead.url(options),
-    method: 'post',
-})
-
-markAllRead.form = markAllReadForm
-
-/**
 * @see \App\Http\Controllers\SystemEventController::destroyAll
 * @see app/Http/Controllers/SystemEventController.php:123
 * @route '/api/system-events/clear-all'
@@ -225,28 +144,6 @@ destroyAll.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: destroyAll.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\SystemEventController::destroyAll
-* @see app/Http/Controllers/SystemEventController.php:123
-* @route '/api/system-events/clear-all'
-*/
-const destroyAllForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroyAll.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::destroyAll
-* @see app/Http/Controllers/SystemEventController.php:123
-* @route '/api/system-events/clear-all'
-*/
-destroyAllForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroyAll.url(options),
-    method: 'post',
-})
-
-destroyAll.form = destroyAllForm
 
 /**
 * @see \App\Http\Controllers\SystemEventController::markRead
@@ -307,28 +204,6 @@ markRead.post = (args: { systemEvent: number | { id: number } } | [systemEvent: 
 })
 
 /**
-* @see \App\Http\Controllers\SystemEventController::markRead
-* @see app/Http/Controllers/SystemEventController.php:52
-* @route '/api/system-events/{systemEvent}/read'
-*/
-const markReadForm = (args: { systemEvent: number | { id: number } } | [systemEvent: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: markRead.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::markRead
-* @see app/Http/Controllers/SystemEventController.php:52
-* @route '/api/system-events/{systemEvent}/read'
-*/
-markReadForm.post = (args: { systemEvent: number | { id: number } } | [systemEvent: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: markRead.url(args, options),
-    method: 'post',
-})
-
-markRead.form = markReadForm
-
-/**
 * @see \App\Http\Controllers\SystemEventController::destroy
 * @see app/Http/Controllers/SystemEventController.php:109
 * @route '/api/system-events/{systemEvent}'
@@ -387,38 +262,6 @@ destroy.delete = (args: { systemEvent: number | { id: number } } | [systemEvent:
 })
 
 /**
-* @see \App\Http\Controllers\SystemEventController::destroy
-* @see app/Http/Controllers/SystemEventController.php:109
-* @route '/api/system-events/{systemEvent}'
-*/
-const destroyForm = (args: { systemEvent: number | { id: number } } | [systemEvent: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroy.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'DELETE',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::destroy
-* @see app/Http/Controllers/SystemEventController.php:109
-* @route '/api/system-events/{systemEvent}'
-*/
-destroyForm.delete = (args: { systemEvent: number | { id: number } } | [systemEvent: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroy.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'DELETE',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-destroy.form = destroyForm
-
-/**
 * @see \App\Http\Controllers\SystemEventController::push
 * @see app/Http/Controllers/SystemEventController.php:79
 * @route '/api/system-events/push'
@@ -451,28 +294,6 @@ push.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: push.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\SystemEventController::push
-* @see app/Http/Controllers/SystemEventController.php:79
-* @route '/api/system-events/push'
-*/
-const pushForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: push.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemEventController::push
-* @see app/Http/Controllers/SystemEventController.php:79
-* @route '/api/system-events/push'
-*/
-pushForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: push.url(options),
-    method: 'post',
-})
-
-push.form = pushForm
 
 const SystemEventController = { index, store, markAllRead, destroyAll, markRead, destroy, push }
 

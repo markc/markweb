@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\OpenClawPushController::push
 * @see app/Http/Controllers/OpenClawPushController.php:11
@@ -32,28 +32,6 @@ push.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: push.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\OpenClawPushController::push
-* @see app/Http/Controllers/OpenClawPushController.php:11
-* @route '/api/openclaw/push'
-*/
-const pushForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: push.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\OpenClawPushController::push
-* @see app/Http/Controllers/OpenClawPushController.php:11
-* @route '/api/openclaw/push'
-*/
-pushForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: push.url(options),
-    method: 'post',
-})
-
-push.form = pushForm
 
 const openclaw = {
     push: Object.assign(push, push),

@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\SystemPromptTemplateController::store
 * @see app/Http/Controllers/SystemPromptTemplateController.php:11
@@ -32,28 +32,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\SystemPromptTemplateController::store
-* @see app/Http/Controllers/SystemPromptTemplateController.php:11
-* @route '/templates'
-*/
-const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemPromptTemplateController::store
-* @see app/Http/Controllers/SystemPromptTemplateController.php:11
-* @route '/templates'
-*/
-storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(options),
-    method: 'post',
-})
-
-store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\SystemPromptTemplateController::update
@@ -114,38 +92,6 @@ update.put = (args: { template: number | { id: number } } | [template: number | 
 })
 
 /**
-* @see \App\Http\Controllers\SystemPromptTemplateController::update
-* @see app/Http/Controllers/SystemPromptTemplateController.php:23
-* @route '/templates/{template}'
-*/
-const updateForm = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: update.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'PUT',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemPromptTemplateController::update
-* @see app/Http/Controllers/SystemPromptTemplateController.php:23
-* @route '/templates/{template}'
-*/
-updateForm.put = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: update.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'PUT',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-update.form = updateForm
-
-/**
 * @see \App\Http\Controllers\SystemPromptTemplateController::destroy
 * @see app/Http/Controllers/SystemPromptTemplateController.php:37
 * @route '/templates/{template}'
@@ -202,38 +148,6 @@ destroy.delete = (args: { template: number | { id: number } } | [template: numbe
     url: destroy.url(args, options),
     method: 'delete',
 })
-
-/**
-* @see \App\Http\Controllers\SystemPromptTemplateController::destroy
-* @see app/Http/Controllers/SystemPromptTemplateController.php:37
-* @route '/templates/{template}'
-*/
-const destroyForm = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroy.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'DELETE',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\SystemPromptTemplateController::destroy
-* @see app/Http/Controllers/SystemPromptTemplateController.php:37
-* @route '/templates/{template}'
-*/
-destroyForm.delete = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroy.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'DELETE',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-destroy.form = destroyForm
 
 const templates = {
     store: Object.assign(store, store),

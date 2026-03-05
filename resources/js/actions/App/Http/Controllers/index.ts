@@ -1,4 +1,5 @@
 import FileLinkController from './FileLinkController'
+import SearchController from './SearchController'
 import JmapAuthController from './JmapAuthController'
 import JmapAttachmentController from './JmapAttachmentController'
 import AppMeshController from './AppMeshController'
@@ -9,8 +10,10 @@ import MeshController from './MeshController'
 import MeshTaskController from './MeshTaskController'
 import DashboardController from './DashboardController'
 import Agent from './Agent'
+import SharedChatController from './SharedChatController'
 import ChatController from './ChatController'
 import SystemPromptTemplateController from './SystemPromptTemplateController'
+import AgentController from './AgentController'
 import DocsController from './DocsController'
 import UserController from './UserController'
 import MailController from './MailController'
@@ -27,6 +30,7 @@ import DavController from './DavController'
 
 const Controllers = {
     FileLinkController: Object.assign(FileLinkController, FileLinkController),
+    SearchController: Object.assign(SearchController, SearchController),
     JmapAuthController: Object.assign(JmapAuthController, JmapAuthController),
     JmapAttachmentController: Object.assign(JmapAttachmentController, JmapAttachmentController),
     AppMeshController: Object.assign(AppMeshController, AppMeshController),
@@ -37,8 +41,10 @@ const Controllers = {
     MeshTaskController: Object.assign(MeshTaskController, MeshTaskController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     Agent: Object.assign(Agent, Agent),
+    SharedChatController: Object.assign(SharedChatController, SharedChatController),
     ChatController: Object.assign(ChatController, ChatController),
     SystemPromptTemplateController: Object.assign(SystemPromptTemplateController, SystemPromptTemplateController),
+    AgentController: Object.assign(AgentController, AgentController),
     DocsController: Object.assign(DocsController, DocsController),
     UserController: Object.assign(UserController, UserController),
     MailController: Object.assign(MailController, MailController),

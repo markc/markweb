@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::index
 * @see app/Http/Controllers/Chat/ChatChannelController.php:18
@@ -44,45 +44,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\Chat\ChatChannelController::index
-* @see app/Http/Controllers/Chat/ChatChannelController.php:18
-* @route '/text-chat'
-*/
-const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::index
-* @see app/Http/Controllers/Chat/ChatChannelController.php:18
-* @route '/text-chat'
-*/
-indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::index
-* @see app/Http/Controllers/Chat/ChatChannelController.php:18
-* @route '/text-chat'
-*/
-indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-index.form = indexForm
-
-/**
 * @see \App\Http\Controllers\Chat\ChatChannelController::store
-* @see app/Http/Controllers/Chat/ChatChannelController.php:73
+* @see app/Http/Controllers/Chat/ChatChannelController.php:81
 * @route '/text-chat/channels'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::store
-* @see app/Http/Controllers/Chat/ChatChannelController.php:73
+* @see app/Http/Controllers/Chat/ChatChannelController.php:81
 * @route '/text-chat/channels'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -106,35 +69,13 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::store
-* @see app/Http/Controllers/Chat/ChatChannelController.php:73
+* @see app/Http/Controllers/Chat/ChatChannelController.php:81
 * @route '/text-chat/channels'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::store
-* @see app/Http/Controllers/Chat/ChatChannelController.php:73
-* @route '/text-chat/channels'
-*/
-const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::store
-* @see app/Http/Controllers/Chat/ChatChannelController.php:73
-* @route '/text-chat/channels'
-*/
-storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(options),
-    method: 'post',
-})
-
-store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::show
@@ -205,45 +146,8 @@ show.head = (args: { channel: string | { slug: string } } | [channel: string | {
 })
 
 /**
-* @see \App\Http\Controllers\Chat\ChatChannelController::show
-* @see app/Http/Controllers/Chat/ChatChannelController.php:36
-* @route '/text-chat/{channel}'
-*/
-const showForm = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: show.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::show
-* @see app/Http/Controllers/Chat/ChatChannelController.php:36
-* @route '/text-chat/{channel}'
-*/
-showForm.get = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: show.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::show
-* @see app/Http/Controllers/Chat/ChatChannelController.php:36
-* @route '/text-chat/{channel}'
-*/
-showForm.head = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: show.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-show.form = showForm
-
-/**
 * @see \App\Http\Controllers\Chat\ChatChannelController::join
-* @see app/Http/Controllers/Chat/ChatChannelController.php:107
+* @see app/Http/Controllers/Chat/ChatChannelController.php:115
 * @route '/text-chat/{channel}/join'
 */
 export const join = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -258,7 +162,7 @@ join.definition = {
 
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::join
-* @see app/Http/Controllers/Chat/ChatChannelController.php:107
+* @see app/Http/Controllers/Chat/ChatChannelController.php:115
 * @route '/text-chat/{channel}/join'
 */
 join.url = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
@@ -291,7 +195,7 @@ join.url = (args: { channel: string | { slug: string } } | [channel: string | { 
 
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::join
-* @see app/Http/Controllers/Chat/ChatChannelController.php:107
+* @see app/Http/Controllers/Chat/ChatChannelController.php:115
 * @route '/text-chat/{channel}/join'
 */
 join.post = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -300,30 +204,8 @@ join.post = (args: { channel: string | { slug: string } } | [channel: string | {
 })
 
 /**
-* @see \App\Http\Controllers\Chat\ChatChannelController::join
-* @see app/Http/Controllers/Chat/ChatChannelController.php:107
-* @route '/text-chat/{channel}/join'
-*/
-const joinForm = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: join.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::join
-* @see app/Http/Controllers/Chat/ChatChannelController.php:107
-* @route '/text-chat/{channel}/join'
-*/
-joinForm.post = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: join.url(args, options),
-    method: 'post',
-})
-
-join.form = joinForm
-
-/**
 * @see \App\Http\Controllers\Chat\ChatChannelController::leave
-* @see app/Http/Controllers/Chat/ChatChannelController.php:119
+* @see app/Http/Controllers/Chat/ChatChannelController.php:127
 * @route '/text-chat/{channel}/leave'
 */
 export const leave = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -338,7 +220,7 @@ leave.definition = {
 
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::leave
-* @see app/Http/Controllers/Chat/ChatChannelController.php:119
+* @see app/Http/Controllers/Chat/ChatChannelController.php:127
 * @route '/text-chat/{channel}/leave'
 */
 leave.url = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
@@ -371,35 +253,13 @@ leave.url = (args: { channel: string | { slug: string } } | [channel: string | {
 
 /**
 * @see \App\Http\Controllers\Chat\ChatChannelController::leave
-* @see app/Http/Controllers/Chat/ChatChannelController.php:119
+* @see app/Http/Controllers/Chat/ChatChannelController.php:127
 * @route '/text-chat/{channel}/leave'
 */
 leave.post = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: leave.url(args, options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::leave
-* @see app/Http/Controllers/Chat/ChatChannelController.php:119
-* @route '/text-chat/{channel}/leave'
-*/
-const leaveForm = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: leave.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\Chat\ChatChannelController::leave
-* @see app/Http/Controllers/Chat/ChatChannelController.php:119
-* @route '/text-chat/{channel}/leave'
-*/
-leaveForm.post = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: leave.url(args, options),
-    method: 'post',
-})
-
-leave.form = leaveForm
 
 const ChatChannelController = { index, store, show, join, leave }
 

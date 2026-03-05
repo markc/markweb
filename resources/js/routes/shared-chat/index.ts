@@ -1,8 +1,8 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
-* @see \App\Http\Controllers\ShareController::show
-* @see app/Http/Controllers/ShareController.php:11
-* @route '/share/{token}'
+* @see \App\Http\Controllers\SharedChatController::show
+* @see app/Http/Controllers/SharedChatController.php:45
+* @route '/s/{token}'
 */
 export const show = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -11,13 +11,13 @@ export const show = (args: { token: string | number } | [token: string | number 
 
 show.definition = {
     methods: ["get","head"],
-    url: '/share/{token}',
+    url: '/s/{token}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\ShareController::show
-* @see app/Http/Controllers/ShareController.php:11
-* @route '/share/{token}'
+* @see \App\Http\Controllers\SharedChatController::show
+* @see app/Http/Controllers/SharedChatController.php:45
+* @route '/s/{token}'
 */
 show.url = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -42,9 +42,9 @@ show.url = (args: { token: string | number } | [token: string | number ] | strin
 }
 
 /**
-* @see \App\Http\Controllers\ShareController::show
-* @see app/Http/Controllers/ShareController.php:11
-* @route '/share/{token}'
+* @see \App\Http\Controllers\SharedChatController::show
+* @see app/Http/Controllers/SharedChatController.php:45
+* @route '/s/{token}'
 */
 show.get = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -52,15 +52,17 @@ show.get = (args: { token: string | number } | [token: string | number ] | strin
 })
 
 /**
-* @see \App\Http\Controllers\ShareController::show
-* @see app/Http/Controllers/ShareController.php:11
-* @route '/share/{token}'
+* @see \App\Http\Controllers\SharedChatController::show
+* @see app/Http/Controllers/SharedChatController.php:45
+* @route '/s/{token}'
 */
 show.head = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
 
-const ShareController = { show }
+const sharedChat = {
+    show: Object.assign(show, show),
+}
 
-export default ShareController
+export default sharedChat

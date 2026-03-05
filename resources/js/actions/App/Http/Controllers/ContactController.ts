@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ContactController::index
 * @see app/Http/Controllers/ContactController.php:16
@@ -62,43 +62,6 @@ index.head = (args: { addressbook: string | number } | [addressbook: string | nu
 })
 
 /**
-* @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:16
-* @route '/addressbooks/{addressbook}/contacts'
-*/
-const indexForm = (args: { addressbook: string | number } | [addressbook: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:16
-* @route '/addressbooks/{addressbook}/contacts'
-*/
-indexForm.get = (args: { addressbook: string | number } | [addressbook: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:16
-* @route '/addressbooks/{addressbook}/contacts'
-*/
-indexForm.head = (args: { addressbook: string | number } | [addressbook: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-index.form = indexForm
-
-/**
 * @see \App\Http\Controllers\ContactController::store
 * @see app/Http/Controllers/ContactController.php:62
 * @route '/addressbooks/{addressbook}/contacts'
@@ -149,28 +112,6 @@ store.post = (args: { addressbook: string | number } | [addressbook: string | nu
     url: store.url(args, options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\ContactController::store
-* @see app/Http/Controllers/ContactController.php:62
-* @route '/addressbooks/{addressbook}/contacts'
-*/
-const storeForm = (args: { addressbook: string | number } | [addressbook: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ContactController::store
-* @see app/Http/Controllers/ContactController.php:62
-* @route '/addressbooks/{addressbook}/contacts'
-*/
-storeForm.post = (args: { addressbook: string | number } | [addressbook: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: store.url(args, options),
-    method: 'post',
-})
-
-store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\ContactController::update
@@ -224,38 +165,6 @@ update.put = (args: { addressbook: string | number, contact: string | number } |
 })
 
 /**
-* @see \App\Http\Controllers\ContactController::update
-* @see app/Http/Controllers/ContactController.php:76
-* @route '/addressbooks/{addressbook}/contacts/{contact}'
-*/
-const updateForm = (args: { addressbook: string | number, contact: string | number } | [addressbook: string | number, contact: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: update.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'PUT',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ContactController::update
-* @see app/Http/Controllers/ContactController.php:76
-* @route '/addressbooks/{addressbook}/contacts/{contact}'
-*/
-updateForm.put = (args: { addressbook: string | number, contact: string | number } | [addressbook: string | number, contact: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: update.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'PUT',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-update.form = updateForm
-
-/**
 * @see \App\Http\Controllers\ContactController::destroy
 * @see app/Http/Controllers/ContactController.php:91
 * @route '/addressbooks/{addressbook}/contacts/{contact}'
@@ -305,38 +214,6 @@ destroy.delete = (args: { addressbook: string | number, contact: string | number
     url: destroy.url(args, options),
     method: 'delete',
 })
-
-/**
-* @see \App\Http\Controllers\ContactController::destroy
-* @see app/Http/Controllers/ContactController.php:91
-* @route '/addressbooks/{addressbook}/contacts/{contact}'
-*/
-const destroyForm = (args: { addressbook: string | number, contact: string | number } | [addressbook: string | number, contact: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroy.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'DELETE',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ContactController::destroy
-* @see app/Http/Controllers/ContactController.php:91
-* @route '/addressbooks/{addressbook}/contacts/{contact}'
-*/
-destroyForm.delete = (args: { addressbook: string | number, contact: string | number } | [addressbook: string | number, contact: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: destroy.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'DELETE',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'post',
-})
-
-destroy.form = destroyForm
 
 /**
 * @see \App\Http\Controllers\ContactController::bulkDestroy
@@ -389,28 +266,6 @@ bulkDestroy.post = (args: { addressbook: string | number } | [addressbook: strin
     url: bulkDestroy.url(args, options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\ContactController::bulkDestroy
-* @see app/Http/Controllers/ContactController.php:101
-* @route '/addressbooks/{addressbook}/contacts/bulk-delete'
-*/
-const bulkDestroyForm = (args: { addressbook: string | number } | [addressbook: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: bulkDestroy.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\ContactController::bulkDestroy
-* @see app/Http/Controllers/ContactController.php:101
-* @route '/addressbooks/{addressbook}/contacts/bulk-delete'
-*/
-bulkDestroyForm.post = (args: { addressbook: string | number } | [addressbook: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: bulkDestroy.url(args, options),
-    method: 'post',
-})
-
-bulkDestroy.form = bulkDestroyForm
 
 const ContactController = { index, store, update, destroy, bulkDestroy }
 

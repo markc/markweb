@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AppMeshController::services
 * @see app/Http/Controllers/AppMeshController.php:102
@@ -44,43 +44,6 @@ services.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::services
-* @see app/Http/Controllers/AppMeshController.php:102
-* @route '/api/appmesh/dbus/services'
-*/
-const servicesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: services.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::services
-* @see app/Http/Controllers/AppMeshController.php:102
-* @route '/api/appmesh/dbus/services'
-*/
-servicesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: services.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::services
-* @see app/Http/Controllers/AppMeshController.php:102
-* @route '/api/appmesh/dbus/services'
-*/
-servicesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: services.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-services.form = servicesForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::introspect
 * @see app/Http/Controllers/AppMeshController.php:114
 * @route '/api/appmesh/dbus/introspect'
@@ -113,28 +76,6 @@ introspect.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: introspect.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::introspect
-* @see app/Http/Controllers/AppMeshController.php:114
-* @route '/api/appmesh/dbus/introspect'
-*/
-const introspectForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: introspect.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::introspect
-* @see app/Http/Controllers/AppMeshController.php:114
-* @route '/api/appmesh/dbus/introspect'
-*/
-introspectForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: introspect.url(options),
-    method: 'post',
-})
-
-introspect.form = introspectForm
 
 const dbus = {
     services: Object.assign(services, services),

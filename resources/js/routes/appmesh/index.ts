@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import dbus from './dbus'
 /**
 * @see \App\Http\Controllers\AppMeshController::tools
@@ -45,43 +45,6 @@ tools.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::tools
-* @see app/Http/Controllers/AppMeshController.php:56
-* @route '/api/appmesh/tools'
-*/
-const toolsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tools.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tools
-* @see app/Http/Controllers/AppMeshController.php:56
-* @route '/api/appmesh/tools'
-*/
-toolsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tools.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tools
-* @see app/Http/Controllers/AppMeshController.php:56
-* @route '/api/appmesh/tools'
-*/
-toolsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tools.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-tools.form = toolsForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::execute
 * @see app/Http/Controllers/AppMeshController.php:64
 * @route '/api/appmesh/execute'
@@ -116,28 +79,6 @@ execute.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::execute
-* @see app/Http/Controllers/AppMeshController.php:64
-* @route '/api/appmesh/execute'
-*/
-const executeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: execute.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::execute
-* @see app/Http/Controllers/AppMeshController.php:64
-* @route '/api/appmesh/execute'
-*/
-executeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: execute.url(options),
-    method: 'post',
-})
-
-execute.form = executeForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::port
 * @see app/Http/Controllers/AppMeshController.php:82
 * @route '/api/appmesh/port'
@@ -170,28 +111,6 @@ port.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: port.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::port
-* @see app/Http/Controllers/AppMeshController.php:82
-* @route '/api/appmesh/port'
-*/
-const portForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: port.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::port
-* @see app/Http/Controllers/AppMeshController.php:82
-* @route '/api/appmesh/port'
-*/
-portForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: port.url(options),
-    method: 'post',
-})
-
-port.form = portForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::index
@@ -238,43 +157,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::index
-* @see app/Http/Controllers/AppMeshController.php:21
-* @route '/appmesh'
-*/
-const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::index
-* @see app/Http/Controllers/AppMeshController.php:21
-* @route '/appmesh'
-*/
-indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::index
-* @see app/Http/Controllers/AppMeshController.php:21
-* @route '/appmesh'
-*/
-indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: index.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-index.form = indexForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::explore
 * @see app/Http/Controllers/AppMeshController.php:32
 * @route '/appmesh/explore'
@@ -317,43 +199,6 @@ explore.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: explore.url(options),
     method: 'head',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::explore
-* @see app/Http/Controllers/AppMeshController.php:32
-* @route '/appmesh/explore'
-*/
-const exploreForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: explore.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::explore
-* @see app/Http/Controllers/AppMeshController.php:32
-* @route '/appmesh/explore'
-*/
-exploreForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: explore.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::explore
-* @see app/Http/Controllers/AppMeshController.php:32
-* @route '/appmesh/explore'
-*/
-exploreForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: explore.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-explore.form = exploreForm
 
 /**
 * @see \App\Http\Controllers\AppMeshController::midi
@@ -400,43 +245,6 @@ midi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\AppMeshController::midi
-* @see app/Http/Controllers/AppMeshController.php:40
-* @route '/appmesh/midi'
-*/
-const midiForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midi.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midi
-* @see app/Http/Controllers/AppMeshController.php:40
-* @route '/appmesh/midi'
-*/
-midiForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midi.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::midi
-* @see app/Http/Controllers/AppMeshController.php:40
-* @route '/appmesh/midi'
-*/
-midiForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: midi.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-midi.form = midiForm
-
-/**
 * @see \App\Http\Controllers\AppMeshController::tts
 * @see app/Http/Controllers/AppMeshController.php:48
 * @route '/appmesh/tts'
@@ -479,43 +287,6 @@ tts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: tts.url(options),
     method: 'head',
 })
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tts
-* @see app/Http/Controllers/AppMeshController.php:48
-* @route '/appmesh/tts'
-*/
-const ttsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tts.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tts
-* @see app/Http/Controllers/AppMeshController.php:48
-* @route '/appmesh/tts'
-*/
-ttsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tts.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\AppMeshController::tts
-* @see app/Http/Controllers/AppMeshController.php:48
-* @route '/appmesh/tts'
-*/
-ttsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: tts.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-tts.form = ttsForm
 
 const appmesh = {
     tools: Object.assign(tools, tools),
