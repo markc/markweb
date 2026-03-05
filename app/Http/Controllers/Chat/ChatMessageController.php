@@ -25,24 +25,34 @@ class ChatMessageController extends Controller
         $user = $request->user();
         $cursor = $request->input('cursor');
 
+        $parentId = $request->input('parent_id');
+
         $query = $channel->messages()
             ->with('user')
-            ->withCount('replies')
-            ->whereNull('parent_id')
-            ->latest('created_at');
+            ->withCount('replies');
+
+        if ($parentId) {
+            $query->where('parent_id', $parentId);
+        } else {
+            $query->whereNull('parent_id');
+        }
+
+        $query->latest('created_at');
 
         if ($cursor) {
             $query->where('id', '<', $cursor);
         }
 
-        $messages = $query->limit(50)->get()
+        $fetched = $query->limit(51)->get();
+        $hasMore = $fetched->count() > 50;
+        $messages = $fetched->take(50)
             ->reverse()
             ->values()
             ->map(fn ($m) => $this->formatMessage($m, $user));
 
         return response()->json([
             'messages' => $messages,
-            'has_more' => $query->limit(51)->count() > 50,
+            'has_more' => $hasMore,
             'next_cursor' => $messages->first()['id'] ?? null,
         ]);
     }

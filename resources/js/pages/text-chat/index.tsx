@@ -17,7 +17,7 @@ export default function TextChatIndex() {
 
     useLayoutEffect(() => {
         setNoPadding(true);
-        setPanel('left', 5); // L6 channels panel
+        setPanel('left', 6); // L6 channels panel
         return () => setNoPadding(false);
     }, [setNoPadding, setPanel]);
 

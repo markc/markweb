@@ -39,6 +39,14 @@ class ChatChannelController extends Controller
 
         $user = $request->user();
 
+        // Auto-join public channels so broadcasting auth works
+        if ($channel->type === 'public' && ! $channel->members()->where('user_id', $user->id)->exists()) {
+            $channel->members()->attach($user->id, [
+                'role' => 'member',
+                'joined_at' => now(),
+            ]);
+        }
+
         // Mark channel as read
         $this->presence->markRead($channel, $user);
 
