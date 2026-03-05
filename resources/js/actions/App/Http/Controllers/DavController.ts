@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults, validateParameters } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults, validateParameters } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DavController::handle
 * @see app/Http/Controllers/DavController.php:11
@@ -204,6 +204,248 @@ handle.mkcalendar = (args?: { path?: string | number } | [path: string | number 
     url: handle.url(args, options),
     method: 'mkcalendar',
 })
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+const handleForm = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: handle.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.get = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: handle.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.head = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.post = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.put = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PUT',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.patch = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.delete = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.options = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'OPTIONS',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.propfind = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PROPFIND',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.proppatch = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PROPPATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.mkcol = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'MKCOL',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.copy = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'COPY',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.move = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'MOVE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.lock = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'LOCK',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.unlock = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'UNLOCK',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.report = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'REPORT',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DavController::handle
+* @see app/Http/Controllers/DavController.php:11
+* @route '/dav/{path?}'
+*/
+handleForm.mkcalendar = (args?: { path?: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: handle.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'MKCALENDAR',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+handle.form = handleForm
 
 const DavController = { handle }
 

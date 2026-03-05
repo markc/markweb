@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Chat\ChatMessageController::index
 * @see app/Http/Controllers/Chat/ChatMessageController.php:21
@@ -68,6 +68,43 @@ index.head = (args: { channel: string | { slug: string } } | [channel: string | 
 })
 
 /**
+* @see \App\Http\Controllers\Chat\ChatMessageController::index
+* @see app/Http/Controllers/Chat/ChatMessageController.php:21
+* @route '/text-chat/{channel}/messages'
+*/
+const indexForm = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::index
+* @see app/Http/Controllers/Chat/ChatMessageController.php:21
+* @route '/text-chat/{channel}/messages'
+*/
+indexForm.get = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::index
+* @see app/Http/Controllers/Chat/ChatMessageController.php:21
+* @route '/text-chat/{channel}/messages'
+*/
+indexForm.head = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+index.form = indexForm
+
+/**
 * @see \App\Http\Controllers\Chat\ChatMessageController::store
 * @see app/Http/Controllers/Chat/ChatMessageController.php:60
 * @route '/text-chat/{channel}/messages'
@@ -124,6 +161,28 @@ store.post = (args: { channel: string | { slug: string } } | [channel: string | 
     url: store.url(args, options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::store
+* @see app/Http/Controllers/Chat/ChatMessageController.php:60
+* @route '/text-chat/{channel}/messages'
+*/
+const storeForm = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: store.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::store
+* @see app/Http/Controllers/Chat/ChatMessageController.php:60
+* @route '/text-chat/{channel}/messages'
+*/
+storeForm.post = (args: { channel: string | { slug: string } } | [channel: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: store.url(args, options),
+    method: 'post',
+})
+
+store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\Chat\ChatMessageController::update
@@ -184,6 +243,38 @@ update.patch = (args: { message: number | { id: number } } | [message: number | 
 })
 
 /**
+* @see \App\Http\Controllers\Chat\ChatMessageController::update
+* @see app/Http/Controllers/Chat/ChatMessageController.php:102
+* @route '/text-chat/messages/{message}'
+*/
+const updateForm = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::update
+* @see app/Http/Controllers/Chat/ChatMessageController.php:102
+* @route '/text-chat/messages/{message}'
+*/
+updateForm.patch = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+update.form = updateForm
+
+/**
 * @see \App\Http\Controllers\Chat\ChatMessageController::destroy
 * @see app/Http/Controllers/Chat/ChatMessageController.php:119
 * @route '/text-chat/messages/{message}'
@@ -240,6 +331,38 @@ destroy.delete = (args: { message: number | { id: number } } | [message: number 
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::destroy
+* @see app/Http/Controllers/Chat/ChatMessageController.php:119
+* @route '/text-chat/messages/{message}'
+*/
+const destroyForm = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::destroy
+* @see app/Http/Controllers/Chat/ChatMessageController.php:119
+* @route '/text-chat/messages/{message}'
+*/
+destroyForm.delete = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+destroy.form = destroyForm
 
 /**
 * @see \App\Http\Controllers\Chat\ChatMessageController::react
@@ -300,6 +423,28 @@ react.post = (args: { message: number | { id: number } } | [message: number | { 
 })
 
 /**
+* @see \App\Http\Controllers\Chat\ChatMessageController::react
+* @see app/Http/Controllers/Chat/ChatMessageController.php:130
+* @route '/text-chat/messages/{message}/react'
+*/
+const reactForm = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: react.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::react
+* @see app/Http/Controllers/Chat/ChatMessageController.php:130
+* @route '/text-chat/messages/{message}/react'
+*/
+reactForm.post = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: react.url(args, options),
+    method: 'post',
+})
+
+react.form = reactForm
+
+/**
 * @see \App\Http\Controllers\Chat\ChatMessageController::unreact
 * @see app/Http/Controllers/Chat/ChatMessageController.php:146
 * @route '/text-chat/messages/{message}/react'
@@ -356,6 +501,38 @@ unreact.delete = (args: { message: number | { id: number } } | [message: number 
     url: unreact.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::unreact
+* @see app/Http/Controllers/Chat/ChatMessageController.php:146
+* @route '/text-chat/messages/{message}/react'
+*/
+const unreactForm = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: unreact.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Chat\ChatMessageController::unreact
+* @see app/Http/Controllers/Chat/ChatMessageController.php:146
+* @route '/text-chat/messages/{message}/react'
+*/
+unreactForm.delete = (args: { message: number | { id: number } } | [message: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: unreact.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+unreact.form = unreactForm
 
 const messages = {
     index: Object.assign(index, index),

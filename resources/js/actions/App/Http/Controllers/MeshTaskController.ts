@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MeshTaskController::dispatch
 * @see app/Http/Controllers/MeshTaskController.php:22
@@ -34,6 +34,28 @@ dispatch.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\MeshTaskController::dispatch
+* @see app/Http/Controllers/MeshTaskController.php:22
+* @route '/api/mesh/task/dispatch'
+*/
+const dispatchForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: dispatch.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::dispatch
+* @see app/Http/Controllers/MeshTaskController.php:22
+* @route '/api/mesh/task/dispatch'
+*/
+dispatchForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: dispatch.url(options),
+    method: 'post',
+})
+
+dispatch.form = dispatchForm
+
+/**
 * @see \App\Http\Controllers\MeshTaskController::callback
 * @see app/Http/Controllers/MeshTaskController.php:73
 * @route '/api/mesh/task/callback'
@@ -66,6 +88,28 @@ callback.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: callback.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::callback
+* @see app/Http/Controllers/MeshTaskController.php:73
+* @route '/api/mesh/task/callback'
+*/
+const callbackForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: callback.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::callback
+* @see app/Http/Controllers/MeshTaskController.php:73
+* @route '/api/mesh/task/callback'
+*/
+callbackForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: callback.url(options),
+    method: 'post',
+})
+
+callback.form = callbackForm
 
 /**
 * @see \App\Http\Controllers\MeshTaskController::status
@@ -130,6 +174,43 @@ status.head = (args: { id: string | number } | [id: string | number ] | string |
 })
 
 /**
+* @see \App\Http\Controllers\MeshTaskController::status
+* @see app/Http/Controllers/MeshTaskController.php:113
+* @route '/api/mesh/task/{id}/status'
+*/
+const statusForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: status.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::status
+* @see app/Http/Controllers/MeshTaskController.php:113
+* @route '/api/mesh/task/{id}/status'
+*/
+statusForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: status.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::status
+* @see app/Http/Controllers/MeshTaskController.php:113
+* @route '/api/mesh/task/{id}/status'
+*/
+statusForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: status.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+status.form = statusForm
+
+/**
 * @see \App\Http\Controllers\MeshTaskController::index
 * @see app/Http/Controllers/MeshTaskController.php:125
 * @route '/api/mesh/tasks'
@@ -172,6 +253,43 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::index
+* @see app/Http/Controllers/MeshTaskController.php:125
+* @route '/api/mesh/tasks'
+*/
+const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::index
+* @see app/Http/Controllers/MeshTaskController.php:125
+* @route '/api/mesh/tasks'
+*/
+indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MeshTaskController::index
+* @see app/Http/Controllers/MeshTaskController.php:125
+* @route '/api/mesh/tasks'
+*/
+indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+index.form = indexForm
 
 const MeshTaskController = { dispatch, callback, status, index }
 

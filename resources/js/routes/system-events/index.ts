@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\SystemEventController::push
 * @see app/Http/Controllers/SystemEventController.php:79
@@ -32,6 +32,28 @@ push.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: push.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\SystemEventController::push
+* @see app/Http/Controllers/SystemEventController.php:79
+* @route '/api/system-events/push'
+*/
+const pushForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: push.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SystemEventController::push
+* @see app/Http/Controllers/SystemEventController.php:79
+* @route '/api/system-events/push'
+*/
+pushForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: push.url(options),
+    method: 'post',
+})
+
+push.form = pushForm
 
 const systemEvents = {
     push: Object.assign(push, push),

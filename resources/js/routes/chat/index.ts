@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 import documents from './documents'
 /**
 * @see \App\Http\Controllers\Agent\ChatController::index
@@ -43,6 +43,43 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:28
+* @route '/chat'
+*/
+const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:28
+* @route '/chat'
+*/
+indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:28
+* @route '/chat'
+*/
+indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Agent\ChatController::show
@@ -113,6 +150,43 @@ show.head = (args: { agentSession: number | { id: number } } | [agentSession: nu
 })
 
 /**
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:39
+* @route '/chat/{agentSession}'
+*/
+const showForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:39
+* @route '/chat/{agentSession}'
+*/
+showForm.get = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::show
+* @see app/Http/Controllers/Agent/ChatController.php:39
+* @route '/chat/{agentSession}'
+*/
+showForm.head = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+show.form = showForm
+
+/**
 * @see \App\Http\Controllers\Agent\ChatController::send
 * @see app/Http/Controllers/Agent/ChatController.php:54
 * @route '/chat/send'
@@ -145,6 +219,28 @@ send.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: send.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::send
+* @see app/Http/Controllers/Agent/ChatController.php:54
+* @route '/chat/send'
+*/
+const sendForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: send.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::send
+* @see app/Http/Controllers/Agent/ChatController.php:54
+* @route '/chat/send'
+*/
+sendForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: send.url(options),
+    method: 'post',
+})
+
+send.form = sendForm
 
 /**
 * @see \App\Http\Controllers\Agent\ChatController::destroy
@@ -205,6 +301,38 @@ destroy.delete = (args: { agentSession: number | { id: number } } | [agentSessio
 })
 
 /**
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:97
+* @route '/chat/{agentSession}'
+*/
+const destroyForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:97
+* @route '/chat/{agentSession}'
+*/
+destroyForm.delete = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+destroy.form = destroyForm
+
+/**
 * @see \App\Http\Controllers\Agent\ChatController::update
 * @see app/Http/Controllers/Agent/ChatController.php:277
 * @route '/chat/{agentSession}'
@@ -261,6 +389,38 @@ update.patch = (args: { agentSession: number | { id: number } } | [agentSession:
     url: update.url(args, options),
     method: 'patch',
 })
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::update
+* @see app/Http/Controllers/Agent/ChatController.php:277
+* @route '/chat/{agentSession}'
+*/
+const updateForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::update
+* @see app/Http/Controllers/Agent/ChatController.php:277
+* @route '/chat/{agentSession}'
+*/
+updateForm.patch = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PATCH',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\SharedChatController::share
@@ -321,6 +481,28 @@ share.post = (args: { agentSession: number | { id: number } } | [agentSession: n
 })
 
 /**
+* @see \App\Http\Controllers\SharedChatController::share
+* @see app/Http/Controllers/SharedChatController.php:16
+* @route '/chat/{agentSession}/share'
+*/
+const shareForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: share.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SharedChatController::share
+* @see app/Http/Controllers/SharedChatController.php:16
+* @route '/chat/{agentSession}/share'
+*/
+shareForm.post = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: share.url(args, options),
+    method: 'post',
+})
+
+share.form = shareForm
+
+/**
 * @see \App\Http\Controllers\SharedChatController::unshare
 * @see app/Http/Controllers/SharedChatController.php:33
 * @route '/chat/{agentSession}/share'
@@ -377,6 +559,38 @@ unshare.delete = (args: { agentSession: number | { id: number } } | [agentSessio
     url: unshare.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\SharedChatController::unshare
+* @see app/Http/Controllers/SharedChatController.php:33
+* @route '/chat/{agentSession}/share'
+*/
+const unshareForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: unshare.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SharedChatController::unshare
+* @see app/Http/Controllers/SharedChatController.php:33
+* @route '/chat/{agentSession}/share'
+*/
+unshareForm.delete = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: unshare.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+unshare.form = unshareForm
 
 /**
 * @see \App\Http\Controllers\Agent\ChatController::exportMethod
@@ -447,6 +661,43 @@ exportMethod.head = (args: { agentSession: number | { id: number } } | [agentSes
 })
 
 /**
+* @see \App\Http\Controllers\Agent\ChatController::exportMethod
+* @see app/Http/Controllers/Agent/ChatController.php:181
+* @route '/chat/{agentSession}/export'
+*/
+const exportMethodForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: exportMethod.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::exportMethod
+* @see app/Http/Controllers/Agent/ChatController.php:181
+* @route '/chat/{agentSession}/export'
+*/
+exportMethodForm.get = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: exportMethod.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::exportMethod
+* @see app/Http/Controllers/Agent/ChatController.php:181
+* @route '/chat/{agentSession}/export'
+*/
+exportMethodForm.head = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: exportMethod.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+exportMethod.form = exportMethodForm
+
+/**
 * @see \App\Http\Controllers\Agent\ChatController::fork
 * @see app/Http/Controllers/Agent/ChatController.php:225
 * @route '/chat/{agentSession}/fork'
@@ -503,6 +754,28 @@ fork.post = (args: { agentSession: number | { id: number } } | [agentSession: nu
     url: fork.url(args, options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::fork
+* @see app/Http/Controllers/Agent/ChatController.php:225
+* @route '/chat/{agentSession}/fork'
+*/
+const forkForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: fork.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::fork
+* @see app/Http/Controllers/Agent/ChatController.php:225
+* @route '/chat/{agentSession}/fork'
+*/
+forkForm.post = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: fork.url(args, options),
+    method: 'post',
+})
+
+fork.form = forkForm
 
 const chat = {
     index: Object.assign(index, index),

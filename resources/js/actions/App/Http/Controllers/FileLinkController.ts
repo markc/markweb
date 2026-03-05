@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\FileLinkController::upload
 * @see app/Http/Controllers/FileLinkController.php:12
@@ -32,6 +32,28 @@ upload.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: upload.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\FileLinkController::upload
+* @see app/Http/Controllers/FileLinkController.php:12
+* @route '/api/filelink/upload'
+*/
+const uploadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\FileLinkController::upload
+* @see app/Http/Controllers/FileLinkController.php:12
+* @route '/api/filelink/upload'
+*/
+uploadForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+upload.form = uploadForm
 
 /**
 * @see \App\Http\Controllers\FileLinkController::destroy
@@ -90,6 +112,38 @@ destroy.delete = (args: { sharedFile: number | { id: number } } | [sharedFile: n
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\FileLinkController::destroy
+* @see app/Http/Controllers/FileLinkController.php:46
+* @route '/api/filelink/{sharedFile}'
+*/
+const destroyForm = (args: { sharedFile: number | { id: number } } | [sharedFile: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\FileLinkController::destroy
+* @see app/Http/Controllers/FileLinkController.php:46
+* @route '/api/filelink/{sharedFile}'
+*/
+destroyForm.delete = (args: { sharedFile: number | { id: number } } | [sharedFile: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+destroy.form = destroyForm
 
 const FileLinkController = { upload, destroy }
 

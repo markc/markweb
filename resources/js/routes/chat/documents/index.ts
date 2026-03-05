@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Agent\ChatController::upload
 * @see app/Http/Controllers/Agent/ChatController.php:114
@@ -32,6 +32,28 @@ upload.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: upload.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::upload
+* @see app/Http/Controllers/Agent/ChatController.php:114
+* @route '/chat/documents'
+*/
+const uploadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::upload
+* @see app/Http/Controllers/Agent/ChatController.php:114
+* @route '/chat/documents'
+*/
+uploadForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+upload.form = uploadForm
 
 /**
 * @see \App\Http\Controllers\Agent\ChatController::index
@@ -76,6 +98,43 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:153
+* @route '/chat/documents'
+*/
+const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:153
+* @route '/chat/documents'
+*/
+indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::index
+* @see app/Http/Controllers/Agent/ChatController.php:153
+* @route '/chat/documents'
+*/
+indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Agent\ChatController::destroy
@@ -128,6 +187,38 @@ destroy.delete = (args: { filename: string | number } | [filename: string | numb
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:169
+* @route '/chat/documents/{filename}'
+*/
+const destroyForm = (args: { filename: string | number } | [filename: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Agent\ChatController::destroy
+* @see app/Http/Controllers/Agent/ChatController.php:169
+* @route '/chat/documents/{filename}'
+*/
+destroyForm.delete = (args: { filename: string | number } | [filename: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+destroy.form = destroyForm
 
 const documents = {
     upload: Object.assign(upload, upload),

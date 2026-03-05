@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\EventController::index
 * @see app/Http/Controllers/EventController.php:16
@@ -62,6 +62,43 @@ index.head = (args: { calendar: string | number } | [calendar: string | number ]
 })
 
 /**
+* @see \App\Http\Controllers\EventController::index
+* @see app/Http/Controllers/EventController.php:16
+* @route '/calendars/{calendar}/events'
+*/
+const indexForm = (args: { calendar: string | number } | [calendar: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EventController::index
+* @see app/Http/Controllers/EventController.php:16
+* @route '/calendars/{calendar}/events'
+*/
+indexForm.get = (args: { calendar: string | number } | [calendar: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EventController::index
+* @see app/Http/Controllers/EventController.php:16
+* @route '/calendars/{calendar}/events'
+*/
+indexForm.head = (args: { calendar: string | number } | [calendar: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+index.form = indexForm
+
+/**
 * @see \App\Http\Controllers\EventController::store
 * @see app/Http/Controllers/EventController.php:60
 * @route '/calendars/{calendar}/events'
@@ -112,6 +149,28 @@ store.post = (args: { calendar: string | number } | [calendar: string | number ]
     url: store.url(args, options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\EventController::store
+* @see app/Http/Controllers/EventController.php:60
+* @route '/calendars/{calendar}/events'
+*/
+const storeForm = (args: { calendar: string | number } | [calendar: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: store.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\EventController::store
+* @see app/Http/Controllers/EventController.php:60
+* @route '/calendars/{calendar}/events'
+*/
+storeForm.post = (args: { calendar: string | number } | [calendar: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: store.url(args, options),
+    method: 'post',
+})
+
+store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\EventController::update
@@ -165,6 +224,38 @@ update.put = (args: { calendar: string | number, event: string | number } | [cal
 })
 
 /**
+* @see \App\Http\Controllers\EventController::update
+* @see app/Http/Controllers/EventController.php:75
+* @route '/calendars/{calendar}/events/{event}'
+*/
+const updateForm = (args: { calendar: string | number, event: string | number } | [calendar: string | number, event: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PUT',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\EventController::update
+* @see app/Http/Controllers/EventController.php:75
+* @route '/calendars/{calendar}/events/{event}'
+*/
+updateForm.put = (args: { calendar: string | number, event: string | number } | [calendar: string | number, event: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: update.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'PUT',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+update.form = updateForm
+
+/**
 * @see \App\Http\Controllers\EventController::destroy
 * @see app/Http/Controllers/EventController.php:94
 * @route '/calendars/{calendar}/events/{event}'
@@ -214,6 +305,38 @@ destroy.delete = (args: { calendar: string | number, event: string | number } | 
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\EventController::destroy
+* @see app/Http/Controllers/EventController.php:94
+* @route '/calendars/{calendar}/events/{event}'
+*/
+const destroyForm = (args: { calendar: string | number, event: string | number } | [calendar: string | number, event: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\EventController::destroy
+* @see app/Http/Controllers/EventController.php:94
+* @route '/calendars/{calendar}/events/{event}'
+*/
+destroyForm.delete = (args: { calendar: string | number, event: string | number } | [calendar: string | number, event: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+destroy.form = destroyForm
 
 /**
 * @see \App\Http\Controllers\EventController::bulkDestroy
@@ -266,6 +389,28 @@ bulkDestroy.post = (args: { calendar: string | number } | [calendar: string | nu
     url: bulkDestroy.url(args, options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\EventController::bulkDestroy
+* @see app/Http/Controllers/EventController.php:109
+* @route '/calendars/{calendar}/events/bulk-delete'
+*/
+const bulkDestroyForm = (args: { calendar: string | number } | [calendar: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: bulkDestroy.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\EventController::bulkDestroy
+* @see app/Http/Controllers/EventController.php:109
+* @route '/calendars/{calendar}/events/bulk-delete'
+*/
+bulkDestroyForm.post = (args: { calendar: string | number } | [calendar: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: bulkDestroy.url(args, options),
+    method: 'post',
+})
+
+bulkDestroy.form = bulkDestroyForm
 
 const events = {
     index: Object.assign(index, index),

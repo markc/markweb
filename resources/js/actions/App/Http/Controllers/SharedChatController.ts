@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SharedChatController::share
 * @see app/Http/Controllers/SharedChatController.php:16
@@ -58,6 +58,28 @@ share.post = (args: { agentSession: number | { id: number } } | [agentSession: n
 })
 
 /**
+* @see \App\Http\Controllers\SharedChatController::share
+* @see app/Http/Controllers/SharedChatController.php:16
+* @route '/chat/{agentSession}/share'
+*/
+const shareForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: share.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SharedChatController::share
+* @see app/Http/Controllers/SharedChatController.php:16
+* @route '/chat/{agentSession}/share'
+*/
+shareForm.post = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: share.url(args, options),
+    method: 'post',
+})
+
+share.form = shareForm
+
+/**
 * @see \App\Http\Controllers\SharedChatController::unshare
 * @see app/Http/Controllers/SharedChatController.php:33
 * @route '/chat/{agentSession}/share'
@@ -114,6 +136,38 @@ unshare.delete = (args: { agentSession: number | { id: number } } | [agentSessio
     url: unshare.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\SharedChatController::unshare
+* @see app/Http/Controllers/SharedChatController.php:33
+* @route '/chat/{agentSession}/share'
+*/
+const unshareForm = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: unshare.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SharedChatController::unshare
+* @see app/Http/Controllers/SharedChatController.php:33
+* @route '/chat/{agentSession}/share'
+*/
+unshareForm.delete = (args: { agentSession: number | { id: number } } | [agentSession: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: unshare.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+unshare.form = unshareForm
 
 /**
 * @see \App\Http\Controllers\SharedChatController::show
@@ -176,6 +230,43 @@ show.head = (args: { token: string | number } | [token: string | number ] | stri
     url: show.url(args, options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\SharedChatController::show
+* @see app/Http/Controllers/SharedChatController.php:45
+* @route '/s/{token}'
+*/
+const showForm = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SharedChatController::show
+* @see app/Http/Controllers/SharedChatController.php:45
+* @route '/s/{token}'
+*/
+showForm.get = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SharedChatController::show
+* @see app/Http/Controllers/SharedChatController.php:45
+* @route '/s/{token}'
+*/
+showForm.head = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+show.form = showForm
 
 const SharedChatController = { share, unshare, show }
 

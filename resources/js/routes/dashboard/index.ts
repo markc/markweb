@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\DashboardController::settings
 * @see app/Http/Controllers/DashboardController.php:57
@@ -32,6 +32,28 @@ settings.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: settings.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\DashboardController::settings
+* @see app/Http/Controllers/DashboardController.php:57
+* @route '/dashboard/settings'
+*/
+const settingsForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: settings.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\DashboardController::settings
+* @see app/Http/Controllers/DashboardController.php:57
+* @route '/dashboard/settings'
+*/
+settingsForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: settings.url(options),
+    method: 'post',
+})
+
+settings.form = settingsForm
 
 const dashboard = {
     settings: Object.assign(settings, settings),

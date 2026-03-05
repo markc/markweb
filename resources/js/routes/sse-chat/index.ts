@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\ChatController::index
 * @see app/Http/Controllers/ChatController.php:27
@@ -42,6 +42,43 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\ChatController::index
+* @see app/Http/Controllers/ChatController.php:27
+* @route '/sse-chat'
+*/
+const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::index
+* @see app/Http/Controllers/ChatController.php:27
+* @route '/sse-chat'
+*/
+indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::index
+* @see app/Http/Controllers/ChatController.php:27
+* @route '/sse-chat'
+*/
+indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: index.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\ChatController::projects
@@ -88,6 +125,43 @@ projects.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\ChatController::projects
+* @see app/Http/Controllers/ChatController.php:43
+* @route '/sse-chat/projects'
+*/
+const projectsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: projects.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::projects
+* @see app/Http/Controllers/ChatController.php:43
+* @route '/sse-chat/projects'
+*/
+projectsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: projects.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::projects
+* @see app/Http/Controllers/ChatController.php:43
+* @route '/sse-chat/projects'
+*/
+projectsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: projects.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+projects.form = projectsForm
+
+/**
 * @see \App\Http\Controllers\ChatController::stream
 * @see app/Http/Controllers/ChatController.php:80
 * @route '/sse-chat/stream'
@@ -122,6 +196,28 @@ stream.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\ChatController::stream
+* @see app/Http/Controllers/ChatController.php:80
+* @route '/sse-chat/stream'
+*/
+const streamForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: stream.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::stream
+* @see app/Http/Controllers/ChatController.php:80
+* @route '/sse-chat/stream'
+*/
+streamForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: stream.url(options),
+    method: 'post',
+})
+
+stream.form = streamForm
+
+/**
 * @see \App\Http\Controllers\ChatController::upload
 * @see app/Http/Controllers/ChatController.php:328
 * @route '/sse-chat/upload'
@@ -154,6 +250,28 @@ upload.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: upload.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\ChatController::upload
+* @see app/Http/Controllers/ChatController.php:328
+* @route '/sse-chat/upload'
+*/
+const uploadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::upload
+* @see app/Http/Controllers/ChatController.php:328
+* @route '/sse-chat/upload'
+*/
+uploadForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+upload.form = uploadForm
 
 /**
 * @see \App\Http\Controllers\ChatController::attachment
@@ -218,6 +336,43 @@ attachment.head = (args: { attachment: string | number } | [attachment: string |
 })
 
 /**
+* @see \App\Http\Controllers\ChatController::attachment
+* @see app/Http/Controllers/ChatController.php:355
+* @route '/sse-chat/attachment/{attachment}'
+*/
+const attachmentForm = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: attachment.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::attachment
+* @see app/Http/Controllers/ChatController.php:355
+* @route '/sse-chat/attachment/{attachment}'
+*/
+attachmentForm.get = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: attachment.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::attachment
+* @see app/Http/Controllers/ChatController.php:355
+* @route '/sse-chat/attachment/{attachment}'
+*/
+attachmentForm.head = (args: { attachment: string | number } | [attachment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: attachment.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+attachment.form = attachmentForm
+
+/**
 * @see \App\Http\Controllers\ChatController::show
 * @see app/Http/Controllers/ChatController.php:57
 * @route '/sse-chat/{conversation}'
@@ -278,6 +433,43 @@ show.head = (args: { conversation: string | number } | [conversation: string | n
     url: show.url(args, options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\ChatController::show
+* @see app/Http/Controllers/ChatController.php:57
+* @route '/sse-chat/{conversation}'
+*/
+const showForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::show
+* @see app/Http/Controllers/ChatController.php:57
+* @route '/sse-chat/{conversation}'
+*/
+showForm.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::show
+* @see app/Http/Controllers/ChatController.php:57
+* @route '/sse-chat/{conversation}'
+*/
+showForm.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+show.form = showForm
 
 /**
 * @see \App\Http\Controllers\ChatController::exportMethod
@@ -342,6 +534,43 @@ exportMethod.head = (args: { conversation: string | number } | [conversation: st
 })
 
 /**
+* @see \App\Http\Controllers\ChatController::exportMethod
+* @see app/Http/Controllers/ChatController.php:305
+* @route '/sse-chat/{conversation}/export'
+*/
+const exportMethodForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: exportMethod.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::exportMethod
+* @see app/Http/Controllers/ChatController.php:305
+* @route '/sse-chat/{conversation}/export'
+*/
+exportMethodForm.get = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: exportMethod.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::exportMethod
+* @see app/Http/Controllers/ChatController.php:305
+* @route '/sse-chat/{conversation}/export'
+*/
+exportMethodForm.head = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: exportMethod.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+exportMethod.form = exportMethodForm
+
+/**
 * @see \App\Http\Controllers\ChatController::destroy
 * @see app/Http/Controllers/ChatController.php:378
 * @route '/sse-chat/{conversation}'
@@ -392,6 +621,38 @@ destroy.delete = (args: { conversation: string | number } | [conversation: strin
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+/**
+* @see \App\Http\Controllers\ChatController::destroy
+* @see app/Http/Controllers/ChatController.php:378
+* @route '/sse-chat/{conversation}'
+*/
+const destroyForm = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\ChatController::destroy
+* @see app/Http/Controllers/ChatController.php:378
+* @route '/sse-chat/{conversation}'
+*/
+destroyForm.delete = (args: { conversation: string | number } | [conversation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: destroy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+destroy.form = destroyForm
 
 const sseChat = {
     index: Object.assign(index, index),

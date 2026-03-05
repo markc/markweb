@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\JmapAttachmentController::download
 * @see app/Http/Controllers/JmapAttachmentController.php:17
@@ -61,6 +61,43 @@ download.head = (args: { blobId: string | number, name: string | number } | [blo
 })
 
 /**
+* @see \App\Http\Controllers\JmapAttachmentController::download
+* @see app/Http/Controllers/JmapAttachmentController.php:17
+* @route '/api/jmap/blob/{blobId}/{name}'
+*/
+const downloadForm = (args: { blobId: string | number, name: string | number } | [blobId: string | number, name: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: download.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\JmapAttachmentController::download
+* @see app/Http/Controllers/JmapAttachmentController.php:17
+* @route '/api/jmap/blob/{blobId}/{name}'
+*/
+downloadForm.get = (args: { blobId: string | number, name: string | number } | [blobId: string | number, name: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: download.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\JmapAttachmentController::download
+* @see app/Http/Controllers/JmapAttachmentController.php:17
+* @route '/api/jmap/blob/{blobId}/{name}'
+*/
+downloadForm.head = (args: { blobId: string | number, name: string | number } | [blobId: string | number, name: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: download.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+download.form = downloadForm
+
+/**
 * @see \App\Http\Controllers\JmapAttachmentController::upload
 * @see app/Http/Controllers/JmapAttachmentController.php:48
 * @route '/api/jmap/blob/upload'
@@ -93,6 +130,28 @@ upload.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: upload.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\JmapAttachmentController::upload
+* @see app/Http/Controllers/JmapAttachmentController.php:48
+* @route '/api/jmap/blob/upload'
+*/
+const uploadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\JmapAttachmentController::upload
+* @see app/Http/Controllers/JmapAttachmentController.php:48
+* @route '/api/jmap/blob/upload'
+*/
+uploadForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: upload.url(options),
+    method: 'post',
+})
+
+upload.form = uploadForm
 
 const blob = {
     download: Object.assign(download, download),
